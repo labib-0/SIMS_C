@@ -101,8 +101,8 @@ void processSale(const char *userId)
         printf("=========================================\n\n");
         printf("1. Search Product by Name\n");
         printf("2. View All Products\n");
-        printf("3. Enter Product ID Directly\n");
-        printf("4. Back to Dashboard\n");
+        printf("3. Enter Product ID\n");
+        printf("4. Back\n");
         printf("\nEnter Choice : ");
 
         int choice;

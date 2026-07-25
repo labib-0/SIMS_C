@@ -54,9 +54,9 @@ int selectProductHelper(char selectedProdId[], const char *actionTitle)
         printf("         %s\n", actionTitle);
         printf("=========================================\n\n");
         printf("1. Search Product by Name\n");
-        printf("2. View All Products / Catalog\n");
-        printf("3. Enter Product ID Directly\n");
-        printf("4. Cancel / Back\n");
+        printf("2. View All Products\n");
+        printf("3. Enter Product ID\n");
+        printf("4. Back\n");
         printf("\nEnter Choice : ");
 
         int choice;
