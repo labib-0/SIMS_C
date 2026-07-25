@@ -33,3 +33,8 @@
 [25/07/2026 07:17:42] [A100] Restocked 40 units for Product p001 (New Stock: 50)
 [25/07/2026 07:27:07] [A100] Logged in successfully
 [25/07/2026 07:27:35] [A100] Added Product P103 (Rice)
+[25/07/2026 07:30:10] [A100] Logged in successfully
+[25/07/2026 07:35:59] [A100] Logged in successfully
+[25/07/2026 07:36:38] [A100] Restocked 15 units for Product p015 (New Stock: 100)
+[25/07/2026 07:40:16] [A100] Logged in successfully
+[25/07/2026 07:40:58] [A100] Processed Sale T10006: Product P006 (Qty: 6, Total: $270.00)
