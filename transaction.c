@@ -27,6 +27,15 @@ struct Transaction
     char soldBy[10];
 };
 
+struct CartItem
+{
+    char productId[10];
+    char productName[50];
+    double unitPrice;
+    int quantity;
+    double itemTotal;
+};
+
 void clearScreen();
 void pressEnter();
 void skipHeader(FILE *);
@@ -90,7 +99,9 @@ void processSale(const char *userId)
     createTransactionsFile();
 
     struct Product products[1000];
-    char selectedProdId[10] = "";
+    struct CartItem cart[100];
+    int cartCount = 0;
+    char inputStr[50];
 
     while (1)
     {
@@ -98,118 +109,197 @@ void processSale(const char *userId)
 
         clearScreen();
         printf("===================================================================\n");
-        printf("                        PROCESS SALES TRANSACTION\n");
+        printf("                   PROCESS SALES (SHOPPING CART)\n");
         printf("===================================================================\n\n");
 
-        printf("%-12s %-30s %-12s %-15s\n", "Product ID", "Product Name", "Price ($)", "Available Qty");
+        printf("AVAILABLE STORE PRODUCTS:\n");
+        printf("%-10s %-25s %-15s %-10s %-12s\n", "Prod ID", "Product Name", "Category", "Price ($)", "Available Qty");
         printf("-------------------------------------------------------------------\n");
 
         for (int i = 0; i < count; i++)
         {
-            printf("%-12s %-30s %-12.2f %-15d\n", products[i].id, products[i].name, products[i].price, products[i].quantity);
+            int inCartQty = 0;
+            for (int k = 0; k < cartCount; k++)
+            {
+                if (strcasecmp(cart[k].productId, products[i].id) == 0)
+                    inCartQty += cart[k].quantity;
+            }
+            int effQty = products[i].quantity - inCartQty;
+
+            printf("%-10s %-25s %-15s %-10.2f %-12d\n",
+                   products[i].id, products[i].name, products[i].category, products[i].price, effQty);
         }
+        printf("-------------------------------------------------------------------\n\n");
 
+        double cartTotal = 0.0;
+        printf("CURRENT CART ITEMS:\n");
+        if (cartCount == 0)
+        {
+            printf("  [Cart is empty]\n");
+        }
+        else
+        {
+            printf("%-5s %-10s %-25s %-6s %-10s %-10s\n", "No.", "Prod ID", "Product Name", "Qty", "Price($)", "Subtotal($)");
+            printf("-------------------------------------------------------------------\n");
+            for (int k = 0; k < cartCount; k++)
+            {
+                cartTotal += cart[k].itemTotal;
+                printf("%-5d %-10s %-25s %-6d %-10.2f %-10.2f\n",
+                       k + 1, cart[k].productId, cart[k].productName,
+                       cart[k].quantity, cart[k].unitPrice, cart[k].itemTotal);
+            }
+        }
         printf("-------------------------------------------------------------------\n");
-        printf("Total Products : %d\n\n", count);
+        printf("TOTAL AMOUNT SO FAR : $%.2f\n\n", cartTotal);
 
-        printf("Enter Product ID to sell (or '0' to cancel) : ");
-        if (scanf("%9s", selectedProdId) != 1) return;
+        printf("Enter Product ID to Add to Cart, '1' to Checkout, or '0' to Cancel : ");
+        if (scanf("%49s", inputStr) != 1) return;
         while (getchar() != '\n');
 
-        if (strcmp(selectedProdId, "0") == 0) return;
+        if (strcmp(inputStr, "0") == 0)
+        {
+            printf("\nSales transaction cancelled.\n");
+            pressEnter();
+            return;
+        }
 
-        int idx = binarySearchProduct(products, count, selectedProdId);
+        if (strcmp(inputStr, "1") == 0)
+        {
+            if (cartCount == 0)
+            {
+                printf("\nCart is empty! Add at least 1 product before checking out.\n");
+                pressEnter();
+                continue;
+            }
+
+            char transDate[15], transTime[15];
+            getCurrentDateTime(transDate, transTime);
+
+            FILE *tf = fopen("transactions.csv", "a");
+
+            clearScreen();
+            printf("===================================================================\n");
+            printf("                     SALES RECEIPT / INVOICE\n");
+            printf("===================================================================\n\n");
+            printf("Date & Time : %s %s\n", transDate, transTime);
+            printf("Cashier/Staff: %s\n", (userId && strlen(userId) > 0) ? userId : "N/A");
+            printf("-------------------------------------------------------------------\n");
+            printf("%-5s %-10s %-25s %-6s %-10s %-10s\n", "No.", "Trans ID", "Product Name", "Qty", "Price($)", "Subtotal($)");
+            printf("-------------------------------------------------------------------\n");
+
+            double grandTotal = 0.0;
+
+            for (int k = 0; k < cartCount; k++)
+            {
+                char transId[15];
+                generateTransactionID(transId);
+
+                int idx = binarySearchProduct(products, count, cart[k].productId);
+                if (idx != -1)
+                {
+                    products[idx].quantity -= cart[k].quantity;
+                    if (products[idx].quantity <= 0)
+                        strcpy(products[idx].stockAlert, "System Out of Stock");
+                    else if (products[idx].quantity <= products[idx].minStock)
+                        strcpy(products[idx].stockAlert, "System Low Stock");
+                }
+
+                if (tf != NULL)
+                {
+                    fprintf(tf, "%s,%s,%s,%s,%s,%d,%.2f,%.2f,%s\n",
+                            transId, transDate, transTime, cart[k].productId, cart[k].productName,
+                            cart[k].quantity, cart[k].unitPrice, cart[k].itemTotal,
+                            (userId && strlen(userId) > 0) ? userId : "N/A");
+                }
+
+                grandTotal += cart[k].itemTotal;
+
+                printf("%-5d %-10s %-25s %-6d %-10.2f %-10.2f\n",
+                       k + 1, transId, cart[k].productName,
+                       cart[k].quantity, cart[k].unitPrice, cart[k].itemTotal);
+            }
+
+            if (tf != NULL) fclose(tf);
+            saveProductsArray(products, count);
+
+            printf("-------------------------------------------------------------------\n");
+            printf("GRAND TOTAL AMOUNT : $%.2f\n", grandTotal);
+            printf("===================================================================\n\n");
+
+            char logMsg[150];
+            sprintf(logMsg, "Processed Sale Invoice: %d item(s) (Grand Total: $%.2f)", cartCount, grandTotal);
+            logAction(userId, logMsg);
+
+            pressEnter();
+            return;
+        }
+
+        int idx = binarySearchProduct(products, count, inputStr);
 
         if (idx == -1)
         {
-            printf("\nProduct ID '%s' not found!\n", selectedProdId);
+            printf("\nProduct ID '%s' not found!\n", inputStr);
             pressEnter();
-            selectedProdId[0] = '\0';
             continue;
         }
 
-        printf("\nProduct Selected: %s (%s)\n", products[idx].name, products[idx].id);
-        printf("Category         : %s\n", products[idx].category);
-        printf("Price per item   : $%.2f\n", products[idx].price);
-        printf("Available Stock  : %d\n\n", products[idx].quantity);
-
-        if (products[idx].quantity <= 0)
+        int inCartQty = 0;
+        int existingCartIdx = -1;
+        for (int k = 0; k < cartCount; k++)
         {
-            printf("ERROR: Product is OUT OF STOCK!\n");
+            if (strcasecmp(cart[k].productId, products[idx].id) == 0)
+            {
+                inCartQty += cart[k].quantity;
+                existingCartIdx = k;
+            }
+        }
+
+        int availableQty = products[idx].quantity - inCartQty;
+
+        if (availableQty <= 0)
+        {
+            printf("\nERROR: Product '%s' is OUT OF STOCK!\n", products[idx].name);
             pressEnter();
-            selectedProdId[0] = '\0';
             continue;
         }
 
-        printf("Enter Quantity to Sell : ");
-        int saleQty = 0;
-        if (scanf("%d", &saleQty) != 1 || saleQty <= 0)
+        printf("\nSelected Product : %s (%s) | Price: $%.2f | Available: %d\n",
+               products[idx].name, products[idx].id, products[idx].price, availableQty);
+        printf("Enter Quantity to Add to Cart : ");
+
+        int addQty = 0;
+        if (scanf("%d", &addQty) != 1 || addQty <= 0)
         {
-            printf("\nInvalid sale quantity!\n");
+            while (getchar() != '\n');
+            printf("\nInvalid quantity!\n");
             pressEnter();
-            selectedProdId[0] = '\0';
+            continue;
+        }
+        while (getchar() != '\n');
+
+        if (addQty > availableQty)
+        {
+            printf("\nERROR: Insufficient Stock! Only %d available.\n", availableQty);
+            pressEnter();
             continue;
         }
 
-        if (saleQty > products[idx].quantity)
+        if (existingCartIdx != -1)
         {
-            printf("\nERROR: Insufficient Stock! Only %d available.\n", products[idx].quantity);
-            pressEnter();
-            selectedProdId[0] = '\0';
-            continue;
+            cart[existingCartIdx].quantity += addQty;
+            cart[existingCartIdx].itemTotal = cart[existingCartIdx].quantity * cart[existingCartIdx].unitPrice;
+        }
+        else
+        {
+            strcpy(cart[cartCount].productId, products[idx].id);
+            strcpy(cart[cartCount].productName, products[idx].name);
+            cart[cartCount].unitPrice = products[idx].price;
+            cart[cartCount].quantity = addQty;
+            cart[cartCount].itemTotal = addQty * products[idx].price;
+            cartCount++;
         }
 
-        double totalAmount = products[idx].price * saleQty;
-        products[idx].quantity -= saleQty;
-        int newQuantity = products[idx].quantity;
-
-        saveProductsArray(products, count);
-
-        struct Transaction t;
-        generateTransactionID(t.transId);
-        getCurrentDateTime(t.date, t.time);
-        strcpy(t.productId, products[idx].id);
-        strcpy(t.productName, products[idx].name);
-        t.quantity = saleQty;
-        t.unitPrice = products[idx].price;
-        t.totalPrice = totalAmount;
-        strcpy(t.soldBy, (userId && strlen(userId) > 0) ? userId : "N/A");
-
-        FILE *tf = fopen("transactions.csv", "a");
-        if (tf != NULL)
-        {
-            fprintf(tf, "%s,%s,%s,%s,%s,%d,%.2f,%.2f,%s\n",
-                    t.transId, t.date, t.time, t.productId, t.productName,
-                    t.quantity, t.unitPrice, t.totalPrice, t.soldBy);
-            fclose(tf);
-        }
-
-        char logMsg[120];
-        sprintf(logMsg, "Processed Sale %s: Product %s (Qty: %d, Total: $%.2f)",
-                t.transId, t.productId, saleQty, totalAmount);
-        logAction(userId, logMsg);
-
-        clearScreen();
-        printf("=========================================\n");
-        printf("        TRANSACTION COMPLETED\n");
-        printf("=========================================\n\n");
-        printf("Transaction ID : %s\n", t.transId);
-        printf("Date & Time    : %s %s\n", t.date, t.time);
-        printf("Product        : %s (%s)\n", t.productName, t.productId);
-        printf("Quantity Sold  : %d\n", t.quantity);
-        printf("Unit Price     : $%.2f\n", t.unitPrice);
-        printf("Total Price    : $%.2f\n", t.totalPrice);
-        printf("Remaining Stock: %d\n", newQuantity);
-
-        if (newQuantity <= products[idx].minStock)
-        {
-            printf("\n-----------------------------------------\n");
-            printf("ALERT: Stock level is now LOW (%d <= %d)!\n", newQuantity, products[idx].minStock);
-            printf("-----------------------------------------\n");
-        }
-
-        pressEnter();
-        return;
+        printf("\nAdded %d unit(s) of %s to Cart!\n", addQty, products[idx].name);
     }
 }
 
@@ -222,42 +312,10 @@ void viewTransactions()
     printf("                               TRANSACTION HISTORY\n");
     printf("========================================================================================\n\n");
 
-    printf("1. View All Transactions\n");
-    printf("2. Filter Transactions by Date Range\n");
-    printf("0. Back\n");
-    printf("Choice: ");
-
-    int choice;
-    if (scanf("%d", &choice) != 1)
-    {
-        while (getchar() != '\n');
-        printf("\nInvalid Choice!\n");
-        pressEnter();
-        return;
-    }
-    while (getchar() != '\n');
-
-    if (choice == 0) return;
-
-    char startDateStr[15] = "", endDateStr[15] = "";
-    long startInt = 0, endInt = 99999999L;
-
-    if (choice == 2)
-    {
-        printf("\nEnter Start Date (DD/MM/YYYY) : ");
-        scanf("%14s", startDateStr);
-        printf("Enter End Date (DD/MM/YYYY)   : ");
-        scanf("%14s", endDateStr);
-        while (getchar() != '\n');
-
-        startInt = dateToInteger(startDateStr);
-        endInt = dateToInteger(endDateStr);
-    }
-
     FILE *fp = fopen("transactions.csv", "r");
     if (fp == NULL)
     {
-        printf("\nUnable to open transactions database!\n");
+        printf("Unable to open transactions database!\n");
         pressEnter();
         return;
     }
@@ -267,7 +325,7 @@ void viewTransactions()
     int count = 0;
     double grandTotal = 0.0;
 
-    printf("\n%-10s %-12s %-10s %-8s %-20s %-6s %-10s %-10s %-8s\n",
+    printf("%-10s %-12s %-10s %-8s %-20s %-6s %-10s %-10s %-8s\n",
            "Trans ID", "Date", "Time", "Prod ID", "Product Name", "Qty", "Price($)", "Total($)", "Sold By");
     printf("----------------------------------------------------------------------------------------\n");
 
@@ -275,15 +333,11 @@ void viewTransactions()
                   t.transId, t.date, t.time, t.productId, t.productName,
                   &t.quantity, &t.unitPrice, &t.totalPrice, t.soldBy) == 9)
     {
-        long transDateInt = dateToInteger(t.date);
-        if (transDateInt >= startInt && transDateInt <= endInt)
-        {
-            count++;
-            grandTotal += t.totalPrice;
-            printf("%-10s %-12s %-10s %-8s %-20s %-6d %-10.2f %-10.2f %-8s\n",
-                   t.transId, t.date, t.time, t.productId, t.productName,
-                   t.quantity, t.unitPrice, t.totalPrice, t.soldBy);
-        }
+        count++;
+        grandTotal += t.totalPrice;
+        printf("%-10s %-12s %-10s %-8s %-20s %-6d %-10.2f %-10.2f %-8s\n",
+               t.transId, t.date, t.time, t.productId, t.productName,
+               t.quantity, t.unitPrice, t.totalPrice, t.soldBy);
     }
 
     fclose(fp);
