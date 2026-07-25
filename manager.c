@@ -12,7 +12,6 @@ void searchProducts();
 void updateStock(const char *userId);
 void checkLowStockAlerts();
 void requestRestock(const char *userId);
-void viewRestockRequests();
 void processRestockRequest(const char *userId);
 
 void viewTransactions();
@@ -36,7 +35,7 @@ void storeManagerDashboard(char userId[], char userName[])
         printf("1. View Products\n");
         printf("2. Search Products\n");
         printf("3. Update Stock\n");
-        printf("4. Low Stock Alerts\n");
+        printf("4. Low Stock & Restock Alerts\n");
         printf("5. Request Restock\n");
         printf("6. Manage Restock Requests\n");
         printf("7. View Transaction History\n");
@@ -78,12 +77,12 @@ void storeManagerDashboard(char userId[], char userName[])
                     printf("=========================================\n");
                     printf("           RESTOCK MANAGEMENT\n");
                     printf("=========================================\n\n");
-                    printf("1. View Pending Restock Requests\n");
+                    printf("1. View Low Stock & Restock Alerts\n");
                     printf("2. Process / Fulfill Restock Request\n");
                     printf("Choice: ");
                     if (scanf("%d", &subChoice) == 1)
                     {
-                        if (subChoice == 1) viewRestockRequests();
+                        if (subChoice == 1) checkLowStockAlerts();
                         else if (subChoice == 2) processRestockRequest(userId);
                     }
                 }

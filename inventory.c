@@ -516,37 +516,59 @@ void checkLowStockAlerts()
     int count = loadAndSortProducts(products, 1000);
 
     clearScreen();
-    printf("=========================================\n");
-    printf("         LOW STOCK ALERTS REPORT\n");
-    printf("=========================================\n\n");
+    printf("====================================================================================================\n");
+    printf("                               LOW STOCK & RESTOCK ALERTS REPORT\n");
+    printf("====================================================================================================\n\n");
 
-    int lowCount = 0;
+    int alertCount = 0;
 
-    printf("%-8s %-25s %-8s %-10s %-15s\n", "ID", "Product Name", "Qty", "MinStock", "Status");
-    printf("------------------------------------------------------------------\n");
+    printf("%-8s %-25s %-18s %-8s %-10s %-12s %-22s\n",
+           "ID", "Product Name", "Category", "Qty", "MinStock", "ReorderQty", "Alert Status");
+    printf("----------------------------------------------------------------------------------------------------\n");
 
     for (int i = 0; i < count; i++)
     {
-        if (products[i].quantity <= products[i].minStock)
+        int isLowStock = (products[i].quantity <= products[i].minStock);
+        int hasRestockReq = (products[i].restockQty > 0);
+
+        if (isLowStock || hasRestockReq)
         {
-            lowCount++;
-            printf("%-8s %-25s %-8d %-10d %-15s\n",
-                   products[i].id, products[i].name, products[i].quantity, products[i].minStock,
-                   (products[i].quantity <= 0) ? "OUT OF STOCK" : "REORDER NEEDED");
+            alertCount++;
+            char status[30];
+
+            if (products[i].quantity <= 0 && hasRestockReq)
+                strcpy(status, "[OUT OF STOCK & REORDERED]");
+            else if (products[i].quantity <= 0)
+                strcpy(status, "[OUT OF STOCK]");
+            else if (isLowStock && hasRestockReq)
+                strcpy(status, "[LOW STOCK & REORDERED]");
+            else if (isLowStock)
+                strcpy(status, "[LOW STOCK]");
+            else
+                strcpy(status, "[RESTOCK REQUESTED]");
+
+            printf("%-8s %-25s %-18s %-8d %-10d %-12d %-22s\n",
+                   products[i].id, products[i].name, products[i].category,
+                   products[i].quantity, products[i].minStock, products[i].restockQty, status);
         }
     }
 
-    printf("------------------------------------------------------------------\n");
-    if (lowCount == 0)
+    printf("----------------------------------------------------------------------------------------------------\n");
+    if (alertCount == 0)
     {
-        printf("All products have sufficient stock levels.\n");
+        printf("All products have sufficient stock levels and no pending restock requests.\n");
     }
     else
     {
-        printf("ATTENTION: %d product(s) require immediate restock!\n", lowCount);
+        printf("ATTENTION: %d product(s) require attention for low stock or pending restock!\n", alertCount);
     }
 
     pressEnter();
+}
+
+void viewRestockRequests()
+{
+    checkLowStockAlerts();
 }
 
 void requestRestock(const char *userId)
@@ -587,38 +609,6 @@ void requestRestock(const char *userId)
         printf("\nProduct ID %s not found!\n", prodId);
     }
 
-    pressEnter();
-}
-
-void viewRestockRequests()
-{
-    createProductsFile();
-    struct Product products[1000];
-    int count = loadAndSortProducts(products, 1000);
-
-    clearScreen();
-    printf("========================================================================\n");
-    printf("                        RESTOCK REQUESTS LIST\n");
-    printf("========================================================================\n\n");
-
-    int pendingCount = 0;
-
-    printf("%-10s %-25s %-15s %-12s %-12s\n",
-           "Prod ID", "Product Name", "Category", "Current Stock", "Requested Qty");
-    printf("------------------------------------------------------------------------\n");
-
-    for (int i = 0; i < count; i++)
-    {
-        if (products[i].restockQty > 0)
-        {
-            pendingCount++;
-            printf("%-10s %-25s %-15s %-12d %-12d\n",
-                   products[i].id, products[i].name, products[i].category, products[i].quantity, products[i].restockQty);
-        }
-    }
-
-    printf("------------------------------------------------------------------------\n");
-    printf("Total Pending Restock Items: %d\n", pendingCount);
     pressEnter();
 }
 
