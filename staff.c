@@ -13,7 +13,7 @@ void searchProducts();
 void checkLowStockAlerts();
 void requestRestock(const char *userId);
 void viewTransactions();
-void changePassword(const char *userId);
+void viewAndEditProfile(const char *userId);
 
 void salesStaffDashboard(char userId[], char userName[])
 {
@@ -33,7 +33,7 @@ void salesStaffDashboard(char userId[], char userName[])
         printf("4. Low Stock Alerts\n");
         printf("5. Request Restock\n");
         printf("6. View Transaction History\n");
-        printf("7. Change My Password\n");
+        printf("7. My Profile (View & Edit)\n");
         printf("8. Logout\n");
         printf("\n=================================================\n");
         printf("Enter Choice : ");
@@ -67,7 +67,7 @@ void salesStaffDashboard(char userId[], char userName[])
                 viewTransactions();
                 break;
             case 7:
-                changePassword(userId);
+                viewAndEditProfile(userId);
                 break;
             case 8:
                 logAction(userId, "Logged out");

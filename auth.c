@@ -9,6 +9,7 @@ struct User
     char name[50];
     char role[20];
     char dob[15];
+    char email[60];
     unsigned long password;
 };
 
@@ -17,8 +18,11 @@ void pressEnter();
 void delay();
 void skipHeader(FILE *);
 void logAction(const char *userId, const char *action);
+
+int validateEmail(char email[]);
 int binarySearchUser(struct User users[], int n, const char *targetId);
 int loadAndSortUsers(struct User users[], int maxUsers);
+void saveUsersArray(struct User users[], int n);
 void roleMenu(char rolePrefix, char userId[], char userName[]);
 
 unsigned long getPassword();
@@ -80,8 +84,8 @@ void createFile()
         fp = fopen("users.csv", "w");
         if(fp != NULL)
         {
-            fprintf(fp, "UserID,FullName,Role,DOB,Password\n");
-            fprintf(fp, "A100,Default Admin,Admin,01/01/2000,%lu\n", hashPassword("Admin123"));
+            fprintf(fp, "UserID,FullName,Role,DOB,Email,Password\n");
+            fprintf(fp, "A100,Default Admin,Admin,01/01/2000,admin@sims.com,%lu\n", hashPassword("Admin123"));
             fclose(fp);
         }
     }
@@ -90,7 +94,7 @@ void createFile()
         skipHeader(fp);
         struct User u;
         int hasAdmin = 0;
-        while(fscanf(fp, "%[^,],%[^,],%[^,],%[^,],%lu\n", u.id, u.name, u.role, u.dob, &u.password) == 5)
+        while(fscanf(fp, "%[^,],%[^,],%[^,],%[^,],%[^,],%lu\n", u.id, u.name, u.role, u.dob, u.email, &u.password) == 6)
         {
             if(u.id[0] == 'A')
             {
@@ -105,7 +109,7 @@ void createFile()
             fp = fopen("users.csv", "a");
             if (fp != NULL)
             {
-                fprintf(fp, "A100,Default Admin,Admin,01/01/2000,%lu\n", hashPassword("Admin123"));
+                fprintf(fp, "A100,Default Admin,Admin,01/01/2000,admin@sims.com,%lu\n", hashPassword("Admin123"));
                 fclose(fp);
             }
         }
@@ -128,8 +132,8 @@ void generateID(char prefix, char id[])
 
     skipHeader(fp);
 
-    while(fscanf(fp, "%[^,],%[^,],%[^,],%[^,],%lu\n",
-                 user.id, user.name, user.role, user.dob, &user.password)==5)
+    while(fscanf(fp, "%[^,],%[^,],%[^,],%[^,],%[^,],%lu\n",
+                 user.id, user.name, user.role, user.dob, user.email, &user.password)==6)
     {
         if(user.id[0]==prefix)
         {
@@ -164,13 +168,23 @@ void registerAdmin()
     fgets(user.dob, sizeof(user.dob), stdin);
     user.dob[strcspn(user.dob, "\n")] = '\0';
 
+    while (1)
+    {
+        printf("Email Address : ");
+        fgets(user.email, sizeof(user.email), stdin);
+        user.email[strcspn(user.email, "\n")] = '\0';
+
+        if (validateEmail(user.email)) break;
+        printf("Invalid Email format! Must contain '@' and '.' within valid positions (e.g. admin@sims.com)\n\n");
+    }
+
     user.password = getPassword();
     generateID('A', user.id);
 
     fp = fopen("users.csv", "a");
     if (fp != NULL)
     {
-        fprintf(fp, "%s,%s,%s,%s,%lu\n", user.id, user.name, user.role, user.dob, user.password);
+        fprintf(fp, "%s,%s,%s,%s,%s,%lu\n", user.id, user.name, user.role, user.dob, user.email, user.password);
         fclose(fp);
     }
 
@@ -182,6 +196,7 @@ void registerAdmin()
     printf("=========================================\n\n");
     printf("User ID   : %s\n", user.id);
     printf("Full Name : %s\n", user.name);
+    printf("Email     : %s\n", user.email);
 
     pressEnter();
 }
@@ -192,47 +207,49 @@ void forgotPassword()
     int count = loadAndSortUsers(users, 500);
 
     char id[10];
+    char name[50];
     char dob[15];
+    char email[60];
 
     clearScreen();
     printf("=========================================\n");
     printf("            FORGOT PASSWORD\n");
     printf("=========================================\n\n");
 
-    printf("Enter User ID : ");
+    printf("Enter User ID                  : ");
     scanf("%9s", id);
-    
-    while(getchar()!='\n');
-    
-    printf("Enter Date of Birth (DD/MM/YYYY) : ");
-    fgets(dob,sizeof(dob),stdin);
-    dob[strcspn(dob,"\n")]='\0';
+    while (getchar() != '\n');
+
+    printf("Enter Full Name                : ");
+    fgets(name, sizeof(name), stdin);
+    name[strcspn(name, "\n")] = '\0';
+
+    printf("Enter Date of Birth (DD/MM/YYYY): ");
+    fgets(dob, sizeof(dob), stdin);
+    dob[strcspn(dob, "\n")] = '\0';
+
+    printf("Enter Email Address            : ");
+    fgets(email, sizeof(email), stdin);
+    email[strcspn(email, "\n")] = '\0';
 
     int idx = binarySearchUser(users, count, id);
 
-    if (idx != -1 && strcmp(users[idx].dob, dob) == 0)
+    if (idx != -1 &&
+        strcasecmp(users[idx].name, name) == 0 &&
+        strcmp(users[idx].dob, dob) == 0 &&
+        strcasecmp(users[idx].email, email) == 0)
     {
-        printf("\nIdentity Verified!\n\nCreate a New ");
+        printf("\nIdentity Verified Successfully!\n\nCreate a New ");
         users[idx].password = getPassword();
 
-        FILE *fp = fopen("users.csv", "w");
-        if (fp != NULL)
-        {
-            fprintf(fp, "UserID,FullName,Role,DOB,Password\n");
-            for (int i = 0; i < count; i++)
-            {
-                fprintf(fp, "%s,%s,%s,%s,%lu\n",
-                        users[i].id, users[i].name, users[i].role, users[i].dob, users[i].password);
-            }
-            fclose(fp);
-        }
+        saveUsersArray(users, count);
 
-        logAction(id, "Reset password via verification");
+        logAction(id, "Reset password via verification (Name, DOB, Email)");
         printf("\nPassword updated successfully. You can now log in.\n");
     }
     else
     {
-        printf("\nVerification Failed! Incorrect User ID or Date of Birth.\n");
+        printf("\nVerification Failed! Details (User ID, Name, DOB, Email) do not match our records.\n");
     }
     pressEnter();
 }
@@ -261,17 +278,7 @@ void changePassword(const char *userId)
             printf("\nCurrent Password Verified!\n\nEnter New ");
             users[idx].password = getPassword();
 
-            FILE *fp = fopen("users.csv", "w");
-            if (fp != NULL)
-            {
-                fprintf(fp, "UserID,FullName,Role,DOB,Password\n");
-                for (int i = 0; i < count; i++)
-                {
-                    fprintf(fp, "%s,%s,%s,%s,%lu\n",
-                            users[i].id, users[i].name, users[i].role, users[i].dob, users[i].password);
-                }
-                fclose(fp);
-            }
+            saveUsersArray(users, count);
 
             logAction(userId, "Changed password successfully");
             printf("\nPassword changed successfully!\n");
@@ -286,6 +293,117 @@ void changePassword(const char *userId)
         printf("\nUser session not found.\n");
     }
     pressEnter();
+}
+
+void viewAndEditProfile(const char *userId)
+{
+    struct User users[500];
+
+    while (1)
+    {
+        int count = loadAndSortUsers(users, 500);
+        int idx = binarySearchUser(users, count, userId);
+
+        if (idx == -1)
+        {
+            printf("\nUser session not found!\n");
+            pressEnter();
+            return;
+        }
+
+        clearScreen();
+        printf("=========================================\n");
+        printf("               MY PROFILE\n");
+        printf("=========================================\n\n");
+        printf("User ID       : %s\n", users[idx].id);
+        printf("Full Name     : %s\n", users[idx].name);
+        printf("Role          : %s\n", users[idx].role);
+        printf("Date of Birth : %s\n", users[idx].dob);
+        printf("Email Address : %s\n", users[idx].email);
+        printf("\n=========================================\n");
+        printf("1. Edit Full Name\n");
+        printf("2. Edit Date of Birth\n");
+        printf("3. Edit Email Address\n");
+        printf("4. Change Password\n");
+        printf("5. Back to Dashboard\n");
+        printf("\nEnter Choice : ");
+
+        int choice;
+        if (scanf("%d", &choice) != 1)
+        {
+            while (getchar() != '\n');
+            printf("\nInvalid Input!\n");
+            pressEnter();
+            continue;
+        }
+        while (getchar() != '\n');
+
+        if (choice == 5) return;
+
+        if (choice == 1)
+        {
+            printf("\nEnter New Full Name : ");
+            char newName[50];
+            fgets(newName, sizeof(newName), stdin);
+            newName[strcspn(newName, "\n")] = '\0';
+            if (strlen(newName) > 0)
+            {
+                strcpy(users[idx].name, newName);
+                saveUsersArray(users, count);
+                logAction(userId, "Updated profile full name");
+                printf("\nFull Name updated successfully!\n");
+            }
+            pressEnter();
+        }
+        else if (choice == 2)
+        {
+            printf("\nEnter New Date of Birth (DD/MM/YYYY) : ");
+            char newDob[15];
+            fgets(newDob, sizeof(newDob), stdin);
+            newDob[strcspn(newDob, "\n")] = '\0';
+            if (strlen(newDob) > 0)
+            {
+                strcpy(users[idx].dob, newDob);
+                saveUsersArray(users, count);
+                logAction(userId, "Updated profile date of birth");
+                printf("\nDate of Birth updated successfully!\n");
+            }
+            pressEnter();
+        }
+        else if (choice == 3)
+        {
+            char newEmail[60];
+            while (1)
+            {
+                printf("\nEnter New Email Address : ");
+                fgets(newEmail, sizeof(newEmail), stdin);
+                newEmail[strcspn(newEmail, "\n")] = '\0';
+
+                if (validateEmail(newEmail))
+                {
+                    strcpy(users[idx].email, newEmail);
+                    saveUsersArray(users, count);
+                    logAction(userId, "Updated profile email address");
+                    printf("\nEmail Address updated successfully!\n");
+                    break;
+                }
+                else
+                {
+                    printf("Invalid Email format! Example: user@domain.com\n");
+                }
+            }
+            pressEnter();
+        }
+        else if (choice == 4)
+        {
+            changePassword(userId);
+        }
+        else
+        {
+            printf("\nInvalid Choice!\n");
+            pressEnter();
+        }
+    }
 }
 
 void login()

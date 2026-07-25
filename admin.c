@@ -8,6 +8,7 @@ struct User
     char name[50];
     char role[20];
     char dob[15];
+    char email[60];
     unsigned long password;
 };
 
@@ -19,11 +20,12 @@ void createFile();
 void generateID(char prefix, char id[]);
 unsigned long getPassword();
 unsigned long hashPassword(char password[]);
+int validateEmail(char email[]);
 
 int binarySearchUser(struct User users[], int n, const char *targetId);
 int loadAndSortUsers(struct User users[], int maxUsers);
+void saveUsersArray(struct User users[], int n);
 
-/* Forward declarations for feature submenus */
 void addProduct(const char *userId);
 void updateProduct(const char *userId);
 void deleteProduct(const char *userId);
@@ -41,7 +43,7 @@ void generateInventoryReport(const char *userId);
 void generateSalesReport(const char *userId);
 void generatePerformanceReport(const char *userId);
 void viewAuditLog(const char *userId);
-void changePassword(const char *userId);
+void viewAndEditProfile(const char *userId);
 
 void addUser(char prefix, char role[])
 {
@@ -66,13 +68,23 @@ void addUser(char prefix, char role[])
     fgets(user.dob, sizeof(user.dob), stdin);
     user.dob[strcspn(user.dob, "\n")] = '\0';
 
+    while (1)
+    {
+        printf("Email Address : ");
+        fgets(user.email, sizeof(user.email), stdin);
+        user.email[strcspn(user.email, "\n")] = '\0';
+
+        if (validateEmail(user.email)) break;
+        printf("Invalid Email format! Must contain '@' and '.' within valid positions (e.g. user@domain.com)\n\n");
+    }
+
     user.password = getPassword();
     generateID(prefix, user.id);
 
     fp = fopen("users.csv", "a");
     if (fp != NULL)
     {
-        fprintf(fp, "%s,%s,%s,%s,%lu\n", user.id, user.name, user.role, user.dob, user.password);
+        fprintf(fp, "%s,%s,%s,%s,%s,%lu\n", user.id, user.name, user.role, user.dob, user.email, user.password);
         fclose(fp);
     }
 
@@ -84,7 +96,9 @@ void addUser(char prefix, char role[])
     printf("=========================================\n");
     printf("      %s ADDED SUCCESSFULLY\n", role);
     printf("=========================================\n\n");
-    printf("User ID : %s\n", user.id);
+    printf("User ID   : %s\n", user.id);
+    printf("Full Name : %s\n", user.name);
+    printf("Email     : %s\n", user.email);
 
     pressEnter();
 }
@@ -139,27 +153,19 @@ void deleteUser(char prefix, char role[])
         }
     }
 
-    FILE *temp = fopen("temp.csv", "w");
-    if (temp != NULL)
+    for (int i = idx; i < count - 1; i++)
     {
-        fprintf(temp, "UserID,FullName,Role,DOB,Password\n");
-        for (int i = 0; i < count; i++)
-        {
-            if (i == idx) continue;
-            fprintf(temp, "%s,%s,%s,%s,%lu\n",
-                    users[i].id, users[i].name, users[i].role, users[i].dob, users[i].password);
-        }
-        fclose(temp);
-        remove("users.csv");
-        rename("temp.csv", "users.csv");
-
-        char logMsg[100];
-        sprintf(logMsg, "Deleted %s account %s", role, id);
-        logAction(id, logMsg);
-
-        printf("\n%s Deleted Successfully.\n", role);
+        users[i] = users[i + 1];
     }
+    count--;
 
+    saveUsersArray(users, count);
+
+    char logMsg[100];
+    sprintf(logMsg, "Deleted %s account %s", role, id);
+    logAction(id, logMsg);
+
+    printf("\n%s Deleted Successfully.\n", role);
     pressEnter();
 }
 
@@ -169,24 +175,24 @@ void viewUsers(char prefix, char role[])
     int count = loadAndSortUsers(users, 500);
 
     clearScreen();
-    printf("==============================================================\n");
-    printf("                  %s LIST\n", role);
-    printf("==============================================================\n\n");
+    printf("========================================================================================\n");
+    printf("                                  %-15s LIST\n", role);
+    printf("========================================================================================\n\n");
 
-    printf("%-5s %-10s %-30s %-15s\n", "No.", "User ID", "Full Name", "DOB");
-    printf("--------------------------------------------------------------\n");
+    printf("%-5s %-10s %-25s %-15s %-25s\n", "No.", "User ID", "Full Name", "DOB", "Email");
+    printf("----------------------------------------------------------------------------------------\n");
 
     int displayCount = 0;
     for (int i = 0; i < count; i++)
     {
         if (users[i].id[0] == prefix)
         {
-            printf("%-5d %-10s %-30s %-15s\n",
-                   ++displayCount, users[i].id, users[i].name, users[i].dob);
+            printf("%-5d %-10s %-25s %-15s %-25s\n",
+                   ++displayCount, users[i].id, users[i].name, users[i].dob, users[i].email);
         }
     }
 
-    printf("\n--------------------------------------------------------------\n");
+    printf("\n----------------------------------------------------------------------------------------\n");
     printf("Total %s : %d\n", role, displayCount);
     pressEnter();
 }
@@ -322,7 +328,7 @@ void adminDashboard(char userId[], char userName[])
         printf("6. Reports System\n");
         printf("7. Data Management\n");
         printf("8. View System Audit Logs\n");
-        printf("9. Change My Password\n");
+        printf("9. My Profile (View & Edit)\n");
         printf("10. Logout\n");
         printf("\n=================================================\n");
         printf("Enter Choice : ");
@@ -428,7 +434,7 @@ void adminDashboard(char userId[], char userName[])
                 viewAuditLog(userId);
                 break;
             case 9:
-                changePassword(userId);
+                viewAndEditProfile(userId);
                 break;
             case 10:
                 logAction(userId, "Logged out");

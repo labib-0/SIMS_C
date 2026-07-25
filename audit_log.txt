@@ -16,3 +16,10 @@
 [25/07/2026 03:10:51] [A100] Logged in successfully (Binary Search)
 [25/07/2026 03:11:29] [A100] Added Product P004 (Lolipop)
 [25/07/2026 06:10:39] [SYSTEM] System shut down safely
+[25/07/2026 06:47:53] [A100] Logged in successfully
+[25/07/2026 06:48:54] [A100] Added Product P005 (Pen)
+[25/07/2026 06:49:27] [A100] Restocked 50 units for Product P004 (New Stock: 150)
+[25/07/2026 06:55:04] [A100] Logged in successfully
+[25/07/2026 06:55:58] [A100] Added Product P006 (Candy)
+[25/07/2026 06:59:32] [A100] Logged in successfully
+[25/07/2026 07:03:20] [A100] Logged in successfully

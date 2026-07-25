@@ -10,6 +10,7 @@ struct User
     char name[50];
     char role[20];
     char dob[15];
+    char email[60];
     unsigned long password;
 };
 
@@ -101,6 +102,36 @@ long dateToInteger(const char *dateStr)
     return 0;
 }
 
+int validateEmail(char email[])
+{
+    int len = strlen(email);
+    if (len < 5) return 0;
+
+    int atPos = -1;
+    int dotPos = -1;
+
+    for (int i = 0; i < len; i++)
+    {
+        if (email[i] == '@')
+        {
+            if (atPos != -1) return 0;
+            atPos = i;
+        }
+        else if (email[i] == '.')
+        {
+            dotPos = i;
+        }
+    }
+
+    if (atPos == -1 || dotPos == -1) return 0;
+    if (atPos == 0 || atPos == len - 1) return 0;
+    if (dotPos == 0 || dotPos == len - 1) return 0;
+    if (abs(atPos - dotPos) <= 1) return 0;
+    if (atPos > dotPos) return 0;
+
+    return 1;
+}
+
 /* BINARY SEARCH & DATA HELPERS FOR USERS */
 
 static int compareUsersByID(const void *a, const void *b)
@@ -130,14 +161,30 @@ int loadAndSortUsers(struct User users[], int maxUsers)
     if (fp == NULL) return 0;
     skipHeader(fp);
     int count = 0;
-    while (count < maxUsers && fscanf(fp, "%[^,],%[^,],%[^,],%[^,],%lu\n",
-                  users[count].id, users[count].name, users[count].role, users[count].dob, &users[count].password) == 5)
+    while (count < maxUsers && fscanf(fp, "%[^,],%[^,],%[^,],%[^,],%[^,],%lu\n",
+                  users[count].id, users[count].name, users[count].role,
+                  users[count].dob, users[count].email, &users[count].password) == 6)
     {
         count++;
     }
     fclose(fp);
     qsort(users, count, sizeof(struct User), compareUsersByID);
     return count;
+}
+
+void saveUsersArray(struct User users[], int n)
+{
+    FILE *fp = fopen("users.csv", "w");
+    if (fp != NULL)
+    {
+        fprintf(fp, "UserID,FullName,Role,DOB,Email,Password\n");
+        for (int i = 0; i < n; i++)
+        {
+            fprintf(fp, "%s,%s,%s,%s,%s,%lu\n",
+                    users[i].id, users[i].name, users[i].role, users[i].dob, users[i].email, users[i].password);
+        }
+        fclose(fp);
+    }
 }
 
 /* BINARY SEARCH & DATA HELPERS FOR PRODUCTS */

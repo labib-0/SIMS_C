@@ -1,4 +1,4 @@
-UserID,FullName,Role,DOB,Password
-A100,Default Admin,Admin,01/01/2000,1880291158179
-M100,Asad,Store Manager,10/10/2000,1450576392
-S100,Masuk,Sales Staff,10/10/2000,1450576392
+UserID,FullName,Role,DOB,Email,Password
+A100,Default Admin,Admin,01/01/2000,admin@sims.com,1880291158179
+M100,Asad,Store Manager,10/10/2000,asad@sims.com,1450576392
+S100,Masuk,Sales Staff,10/10/2000,masuk@sims.com,1450576392

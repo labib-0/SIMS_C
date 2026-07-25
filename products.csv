@@ -2,4 +2,6 @@ ProductID,Name,Category,Price,Quantity,MinStock,RestockQty
 P001,Gaming Laptop,Electronics,1200.00,10,3,0
 P002,Wireless Mouse,Electronics,25.50,50,10,0
 P003,Mechanical Keyboard,Electronics,85.00,4,5,0
-P004,Lolipop,Food,10.00,100,5,0
+P004,Lolipop,Food,10.00,150,5,0
+P005,Pen,Stationary,10.00,50,10,0
+P006,Candy,Food,2.00,500,50,0

@@ -18,7 +18,7 @@ void viewTransactions();
 void generateInventoryReport(const char *userId);
 void generateSalesReport(const char *userId);
 void generatePerformanceReport(const char *userId);
-void changePassword(const char *userId);
+void viewAndEditProfile(const char *userId);
 
 void storeManagerDashboard(char userId[], char userName[])
 {
@@ -40,7 +40,7 @@ void storeManagerDashboard(char userId[], char userName[])
         printf("6. Manage Restock Requests\n");
         printf("7. View Transaction History\n");
         printf("8. Reports System\n");
-        printf("9. Change My Password\n");
+        printf("9. My Profile (View & Edit)\n");
         printf("10. Logout\n");
         printf("\n=================================================\n");
         printf("Enter Choice : ");
@@ -110,7 +110,7 @@ void storeManagerDashboard(char userId[], char userName[])
                 }
                 break;
             case 9:
-                changePassword(userId);
+                viewAndEditProfile(userId);
                 break;
             case 10:
                 logAction(userId, "Logged out");
