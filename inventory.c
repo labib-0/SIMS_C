@@ -399,15 +399,15 @@ void stockManagement(const char *userId)
         printf("                                      STOCK MANAGEMENT\n");
         printf("====================================================================================================\n\n");
 
-        printf("%-8s %-22s %-15s %-10s %-10s %-8s %-20s\n",
-               "ID", "Product Name", "Category", "Price($)", "Stock Qty", "Min Qty", "Stock Alert");
+        printf("%-8s %-25s %-18s %-12s %-12s %-20s\n",
+               "ID", "Product Name", "Category", "Price($)", "Stock Qty", "Stock Alert");
         printf("----------------------------------------------------------------------------------------------------\n");
 
         for (int i = 0; i < count; i++)
         {
-            printf("%-8s %-22s %-15s %-10.2f %-10d %-8d %-20s\n",
+            printf("%-8s %-25s %-18s %-12.2f %-12d %-20s\n",
                    products[i].id, products[i].name, products[i].category,
-                   products[i].price, products[i].quantity, products[i].minStock, products[i].stockAlert);
+                   products[i].price, products[i].quantity, products[i].stockAlert);
         }
 
         printf("----------------------------------------------------------------------------------------------------\n");
@@ -424,8 +424,8 @@ void stockManagement(const char *userId)
 
         if (idx != -1)
         {
-            printf("\nProduct Matched : %s (%s)\nCurrent Stock   : %d | Min Stock: %d | Status: %s\n",
-                   products[idx].id, products[idx].name, products[idx].quantity, products[idx].minStock, products[idx].stockAlert);
+            printf("\nProduct Matched : %s (%s)\nCurrent Stock   : %d | Status: %s\n",
+                   products[idx].id, products[idx].name, products[idx].quantity, products[idx].stockAlert);
 
             printf("Enter Quantity to Add : ");
             int addQty = 0;
