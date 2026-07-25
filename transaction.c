@@ -96,125 +96,26 @@ void processSale(const char *userId)
         int count = loadAndSortProducts(products, 1000);
 
         clearScreen();
-        printf("=========================================\n");
-        printf("         PROCESS SALES TRANSACTION\n");
-        printf("=========================================\n\n");
-        printf("1. Search Product by Name\n");
-        printf("2. View All Products\n");
-        printf("3. Enter Product ID\n");
-        printf("4. Back\n");
-        printf("\nEnter Choice : ");
+        printf("===================================================================\n");
+        printf("                        PROCESS SALES TRANSACTION\n");
+        printf("===================================================================\n\n");
 
-        int choice;
-        if (scanf("%d", &choice) != 1)
+        printf("%-12s %-30s %-12s %-15s\n", "Product ID", "Product Name", "Price ($)", "Available Qty");
+        printf("-------------------------------------------------------------------\n");
+
+        for (int i = 0; i < count; i++)
         {
-            while (getchar() != '\n');
-            printf("\nInvalid Input!\n");
-            pressEnter();
-            continue;
+            printf("%-12s %-30s %-12.2f %-15d\n", products[i].id, products[i].name, products[i].price, products[i].quantity);
         }
+
+        printf("-------------------------------------------------------------------\n");
+        printf("Total Products : %d\n\n", count);
+
+        printf("Enter Product ID to sell (or '0' to cancel) : ");
+        if (scanf("%9s", selectedProdId) != 1) return;
         while (getchar() != '\n');
 
-        if (choice == 4) return;
-
-        if (choice == 1)
-        {
-            while (1)
-            {
-                clearScreen();
-                printf("=========================================\n");
-                printf("         SEARCH PRODUCT BY NAME\n");
-                printf("=========================================\n\n");
-                printf("Enter Product Name to Search (or '0' to cancel) : ");
-
-                char query[50];
-                fgets(query, sizeof(query), stdin);
-                query[strcspn(query, "\n")] = '\0';
-
-                if (strcmp(query, "0") == 0) break;
-                if (strlen(query) == 0) continue;
-
-                int searchCount = 0;
-                printf("\n%-12s %-30s %-12s %-15s\n", "Product ID", "Product Name", "Price ($)", "Available Qty");
-                printf("-------------------------------------------------------------------\n");
-
-                for (int i = 0; i < count; i++)
-                {
-                    if (strcasestr(products[i].name, query) != NULL)
-                    {
-                        searchCount++;
-                        printf("%-12s %-30s %-12.2f %-15d\n", products[i].id, products[i].name, products[i].price, products[i].quantity);
-                    }
-                }
-
-                printf("-------------------------------------------------------------------\n");
-
-                if (searchCount == 0)
-                {
-                    printf("\nNothing found matching '%s'! Search again.\n", query);
-                    pressEnter();
-                    continue;
-                }
-                else
-                {
-                    printf("\nEnter Product ID to sell (or '0' to cancel) : ");
-                    scanf("%9s", selectedProdId);
-                    while (getchar() != '\n');
-
-                    if (strcmp(selectedProdId, "0") == 0)
-                    {
-                        selectedProdId[0] = '\0';
-                        break;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-        else if (choice == 2)
-        {
-            clearScreen();
-            printf("===================================================================\n");
-            printf("                        AVAILABLE PRODUCTS LIST\n");
-            printf("===================================================================\n\n");
-
-            printf("%-12s %-30s %-12s %-15s\n", "Product ID", "Product Name", "Price ($)", "Available Qty");
-            printf("-------------------------------------------------------------------\n");
-
-            for (int i = 0; i < count; i++)
-            {
-                printf("%-12s %-30s %-12.2f %-15d\n", products[i].id, products[i].name, products[i].price, products[i].quantity);
-            }
-
-            printf("-------------------------------------------------------------------\n");
-            printf("Total Products : %d\n\n", count);
-
-            printf("Enter Product ID to sell (or '0' to cancel) : ");
-            scanf("%9s", selectedProdId);
-            while (getchar() != '\n');
-
-            if (strcmp(selectedProdId, "0") == 0)
-            {
-                selectedProdId[0] = '\0';
-                continue;
-            }
-        }
-        else if (choice == 3)
-        {
-            printf("\nEnter Product ID : ");
-            scanf("%9s", selectedProdId);
-            while (getchar() != '\n');
-        }
-        else
-        {
-            printf("\nInvalid Choice!\n");
-            pressEnter();
-            continue;
-        }
-
-        if (strlen(selectedProdId) == 0) continue;
+        if (strcmp(selectedProdId, "0") == 0) return;
 
         int idx = binarySearchProduct(products, count, selectedProdId);
 

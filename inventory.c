@@ -44,135 +44,36 @@ void createProductsFile()
 int selectProductHelper(char selectedProdId[], const char *actionTitle)
 {
     struct Product products[1000];
+    int count = loadAndSortProducts(products, 1000);
 
-    while (1)
+    clearScreen();
+    printf("================================================================================\n");
+    printf("         %s\n", actionTitle);
+    printf("================================================================================\n\n");
+
+    printf("%-10s %-25s %-15s %-10s %-8s %-10s\n",
+           "ID", "Product Name", "Category", "Price($)", "Qty", "ReorderQty");
+    printf("--------------------------------------------------------------------------------\n");
+
+    for (int i = 0; i < count; i++)
     {
-        int count = loadAndSortProducts(products, 1000);
-
-        clearScreen();
-        printf("=========================================\n");
-        printf("         %s\n", actionTitle);
-        printf("=========================================\n\n");
-        printf("1. Search Product by Name\n");
-        printf("2. View All Products\n");
-        printf("3. Enter Product ID\n");
-        printf("4. Back\n");
-        printf("\nEnter Choice : ");
-
-        int choice;
-        if (scanf("%d", &choice) != 1)
-        {
-            while (getchar() != '\n');
-            printf("\nInvalid Input!\n");
-            pressEnter();
-            continue;
-        }
-        while (getchar() != '\n');
-
-        if (choice == 4) return 0;
-
-        if (choice == 1)
-        {
-            while (1)
-            {
-                clearScreen();
-                printf("=========================================\n");
-                printf("         SEARCH PRODUCT BY NAME\n");
-                printf("=========================================\n\n");
-                printf("Enter Product Name to Search (or '0' to cancel) : ");
-
-                char query[50];
-                fgets(query, sizeof(query), stdin);
-                query[strcspn(query, "\n")] = '\0';
-
-                if (strcmp(query, "0") == 0) break;
-                if (strlen(query) == 0) continue;
-
-                int searchCount = 0;
-                printf("\n%-10s %-25s %-15s %-10s %-8s %-10s\n",
-                       "ID", "Product Name", "Category", "Price($)", "Qty", "ReorderQty");
-                printf("--------------------------------------------------------------------------------\n");
-
-                for (int i = 0; i < count; i++)
-                {
-                    if (strcasestr(products[i].name, query) != NULL)
-                    {
-                        searchCount++;
-                        printf("%-10s %-25s %-15s %-10.2f %-8d %-10d\n",
-                               products[i].id, products[i].name, products[i].category,
-                               products[i].price, products[i].quantity, products[i].restockQty);
-                    }
-                }
-                printf("--------------------------------------------------------------------------------\n");
-
-                if (searchCount == 0)
-                {
-                    printf("\nNothing found matching '%s'! Search again.\n", query);
-                    pressEnter();
-                    continue;
-                }
-                else
-                {
-                    printf("\nEnter Product ID (or '0' to cancel) : ");
-                    scanf("%9s", selectedProdId);
-                    while (getchar() != '\n');
-
-                    if (strcmp(selectedProdId, "0") == 0)
-                    {
-                        selectedProdId[0] = '\0';
-                        break;
-                    }
-                    else
-                    {
-                        return 1;
-                    }
-                }
-            }
-        }
-        else if (choice == 2)
-        {
-            clearScreen();
-            printf("================================================================================\n");
-            printf("                              ALL PRODUCTS LIST\n");
-            printf("================================================================================\n\n");
-
-            printf("%-10s %-25s %-15s %-10s %-8s %-10s\n",
-                   "ID", "Product Name", "Category", "Price($)", "Qty", "ReorderQty");
-            printf("--------------------------------------------------------------------------------\n");
-
-            for (int i = 0; i < count; i++)
-            {
-                printf("%-10s %-25s %-15s %-10.2f %-8d %-10d\n",
-                       products[i].id, products[i].name, products[i].category,
-                       products[i].price, products[i].quantity, products[i].restockQty);
-            }
-            printf("--------------------------------------------------------------------------------\n");
-            printf("Total Products : %d\n\n", count);
-
-            printf("Enter Product ID (or '0' to cancel) : ");
-            scanf("%9s", selectedProdId);
-            while (getchar() != '\n');
-
-            if (strcmp(selectedProdId, "0") == 0)
-            {
-                selectedProdId[0] = '\0';
-                continue;
-            }
-            return 1;
-        }
-        else if (choice == 3)
-        {
-            printf("\nEnter Product ID : ");
-            scanf("%9s", selectedProdId);
-            while (getchar() != '\n');
-            return 1;
-        }
-        else
-        {
-            printf("\nInvalid Choice!\n");
-            pressEnter();
-        }
+        printf("%-10s %-25s %-15s %-10.2f %-8d %-10d\n",
+               products[i].id, products[i].name, products[i].category,
+               products[i].price, products[i].quantity, products[i].restockQty);
     }
+    printf("--------------------------------------------------------------------------------\n");
+    printf("Total Products : %d\n\n", count);
+
+    printf("Enter Product ID (or '0' to cancel) : ");
+    if (scanf("%9s", selectedProdId) != 1) return 0;
+    while (getchar() != '\n');
+
+    if (strcmp(selectedProdId, "0") == 0)
+    {
+        selectedProdId[0] = '\0';
+        return 0;
+    }
+    return 1;
 }
 
 void generateProductID(char id[])
