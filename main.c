@@ -181,13 +181,11 @@ void storeManagerDashboard(char userId[], char userName[])
         printf(" Logged in as: %s (%s)\n", userName, userId);
         printf("=================================================\n\n");
 
-        printf("1. View Products\n");
-        printf("2. Search Products\n");
-        printf("3. Stock Management\n");
-        printf("4. Request Restock\n");
-        printf("5. View Transaction History\n");
-        printf("6. Reports System\n");
-        printf("7. My Profile (View & Edit)\n");
+        printf("1. Product Management\n");
+        printf("2. Request Restock\n");
+        printf("3. View Transaction History\n");
+        printf("4. Reports System\n");
+        printf("5. My Profile (View & Edit)\n");
         printf("0. Logout\n");
         printf("\n=================================================\n");
         printf("Enter Choice : ");
@@ -203,21 +201,37 @@ void storeManagerDashboard(char userId[], char userName[])
         switch (choice)
         {
             case 1:
-                viewProducts();
+                {
+                    int subChoice;
+                    clearScreen();
+                    printf("=========================================\n");
+                    printf("           PRODUCT MANAGEMENT\n");
+                    printf("=========================================\n\n");
+                    printf("1. Add New Product\n");
+                    printf("2. Update Product Details\n");
+                    printf("3. Delete Product\n");
+                    printf("4. View All Products\n");
+                    printf("5. Search Products\n");
+                    printf("0. Back\n");
+                    printf("Choice: ");
+                    if (scanf("%d", &subChoice) == 1)
+                    {
+                        if (subChoice == 1) addProduct(userId);
+                        else if (subChoice == 2) updateProduct(userId);
+                        else if (subChoice == 3) deleteProduct(userId);
+                        else if (subChoice == 4) viewProducts();
+                        else if (subChoice == 5) searchProducts();
+                        else if (subChoice == 0) break;
+                    }
+                }
                 break;
             case 2:
-                searchProducts();
-                break;
-            case 3:
-                stockManagement(userId);
-                break;
-            case 4:
                 requestRestock(userId);
                 break;
-            case 5:
+            case 3:
                 viewTransactions();
                 break;
-            case 6:
+            case 4:
                 {
                     int subChoice;
                     clearScreen();
@@ -238,7 +252,7 @@ void storeManagerDashboard(char userId[], char userName[])
                     }
                 }
                 break;
-            case 7:
+            case 5:
                 viewAndEditProfile(userId);
                 break;
             case 0:
@@ -268,10 +282,9 @@ void salesStaffDashboard(char userId[], char userName[])
         printf("1. Process Sales Transaction\n");
         printf("2. View Products\n");
         printf("3. Search Products\n");
-        printf("4. Stock Management\n");
-        printf("5. Request Restock\n");
-        printf("6. View Transaction History\n");
-        printf("7. My Profile (View & Edit)\n");
+        printf("4. Request Restock\n");
+        printf("5. View Transaction History\n");
+        printf("6. My Profile (View & Edit)\n");
         printf("0. Logout\n");
         printf("\n=================================================\n");
         printf("Enter Choice : ");
@@ -296,15 +309,12 @@ void salesStaffDashboard(char userId[], char userName[])
                 searchProducts();
                 break;
             case 4:
-                stockManagement(userId);
-                break;
-            case 5:
                 requestRestock(userId);
                 break;
-            case 6:
+            case 5:
                 viewTransactions();
                 break;
-            case 7:
+            case 6:
                 viewAndEditProfile(userId);
                 break;
             case 0:
