@@ -23,6 +23,7 @@ struct Product
     int quantity;
     int minStock;
     int restockQty;
+    char stockAlert[30];
 };
 
 struct Transaction
@@ -216,11 +217,21 @@ int loadAndSortProducts(struct Product products[], int maxProducts)
     if (fp == NULL) return 0;
     skipHeader(fp);
     int count = 0;
-    while (count < maxProducts && fscanf(fp, "%[^,],%[^,],%[^,],%lf,%d,%d,%d\n",
-                  products[count].id, products[count].name, products[count].category,
-                  &products[count].price, &products[count].quantity, &products[count].minStock, &products[count].restockQty) >= 6)
+    while (count < maxProducts)
     {
-        count++;
+        int read = fscanf(fp, "%[^,],%[^,],%[^,],%lf,%d,%d,%d,%[^\n]\n",
+                          products[count].id, products[count].name, products[count].category,
+                          &products[count].price, &products[count].quantity, &products[count].minStock,
+                          &products[count].restockQty, products[count].stockAlert);
+        if (read >= 7)
+        {
+            if (read == 7 || strlen(products[count].stockAlert) == 0) strcpy(products[count].stockAlert, "-");
+            count++;
+        }
+        else
+        {
+            break;
+        }
     }
     fclose(fp);
     qsort(products, count, sizeof(struct Product), compareProductsByID);
@@ -232,12 +243,14 @@ void saveProductsArray(struct Product products[], int n)
     FILE *fp = fopen("products.csv", "w");
     if (fp != NULL)
     {
-        fprintf(fp, "ProductID,Name,Category,Price,Quantity,MinStock,RestockQty\n");
+        fprintf(fp, "ProductID,Name,Category,Price,Quantity,MinStock,RestockQty,StockAlert\n");
         for (int i = 0; i < n; i++)
         {
-            fprintf(fp, "%s,%s,%s,%.2f,%d,%d,%d\n",
+            if (strlen(products[i].stockAlert) == 0) strcpy(products[i].stockAlert, "-");
+            fprintf(fp, "%s,%s,%s,%.2f,%d,%d,%d,%s\n",
                     products[i].id, products[i].name, products[i].category,
-                    products[i].price, products[i].quantity, products[i].minStock, products[i].restockQty);
+                    products[i].price, products[i].quantity, products[i].minStock,
+                    products[i].restockQty, products[i].stockAlert);
         }
         fclose(fp);
     }

@@ -10,9 +10,9 @@ void logAction(const char *userId, const char *action);
 void viewProducts();
 void searchProducts();
 void updateStock(const char *userId);
-void checkLowStockAlerts();
+void manageLowStock(const char *userId);
 void requestRestock(const char *userId);
-void processRestockRequest(const char *userId);
+void stockManagementMenu(const char *userId);
 
 void viewTransactions();
 void generateInventoryReport(const char *userId);
@@ -34,14 +34,13 @@ void storeManagerDashboard(char userId[], char userName[])
 
         printf("1. View Products\n");
         printf("2. Search Products\n");
-        printf("3. Update Stock\n");
-        printf("4. Low Stock & Restock Alerts\n");
+        printf("3. Stock Management\n");
+        printf("4. Manage Low Stock\n");
         printf("5. Request Restock\n");
-        printf("6. Manage Restock Requests\n");
-        printf("7. View Transaction History\n");
-        printf("8. Reports System\n");
-        printf("9. My Profile (View & Edit)\n");
-        printf("10. Logout\n");
+        printf("6. View Transaction History\n");
+        printf("7. Reports System\n");
+        printf("8. My Profile (View & Edit)\n");
+        printf("9. Logout\n");
         printf("\n=================================================\n");
         printf("Enter Choice : ");
 
@@ -62,35 +61,18 @@ void storeManagerDashboard(char userId[], char userName[])
                 searchProducts();
                 break;
             case 3:
-                updateStock(userId);
+                stockManagementMenu(userId);
                 break;
             case 4:
-                checkLowStockAlerts();
+                manageLowStock(userId);
                 break;
             case 5:
                 requestRestock(userId);
                 break;
             case 6:
-                {
-                    int subChoice;
-                    clearScreen();
-                    printf("=========================================\n");
-                    printf("           RESTOCK MANAGEMENT\n");
-                    printf("=========================================\n\n");
-                    printf("1. View Low Stock & Restock Alerts\n");
-                    printf("2. Process / Fulfill Restock Request\n");
-                    printf("Choice: ");
-                    if (scanf("%d", &subChoice) == 1)
-                    {
-                        if (subChoice == 1) checkLowStockAlerts();
-                        else if (subChoice == 2) processRestockRequest(userId);
-                    }
-                }
-                break;
-            case 7:
                 viewTransactions();
                 break;
-            case 8:
+            case 7:
                 {
                     int subChoice;
                     clearScreen();
@@ -109,10 +91,10 @@ void storeManagerDashboard(char userId[], char userName[])
                     }
                 }
                 break;
-            case 9:
+            case 8:
                 viewAndEditProfile(userId);
                 break;
-            case 10:
+            case 9:
                 logAction(userId, "Logged out");
                 printf("\nLogging out...\n");
                 delay();

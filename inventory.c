@@ -12,6 +12,7 @@ struct Product
     int quantity;
     int minStock;
     int restockQty;
+    char stockAlert[30];
 };
 
 void clearScreen();
@@ -31,7 +32,7 @@ void createProductsFile()
         fp = fopen("products.csv", "w");
         if(fp != NULL)
         {
-            fprintf(fp, "ProductID,Name,Category,Price,Quantity,MinStock,RestockQty\n");
+            fprintf(fp, "ProductID,Name,Category,Price,Quantity,MinStock,RestockQty,StockAlert\n");
             fclose(fp);
         }
     }
@@ -98,6 +99,7 @@ void addProduct(const char *userId)
     createProductsFile();
     struct Product p;
     p.restockQty = 0;
+    strcpy(p.stockAlert, "-");
 
     clearScreen();
     printf("=========================================\n");
@@ -135,12 +137,17 @@ void addProduct(const char *userId)
         printf("Invalid Min Level! Re-enter: ");
     }
 
+    if (p.quantity <= 0)
+        strcpy(p.stockAlert, "System Out of Stock");
+    else if (p.quantity <= p.minStock)
+        strcpy(p.stockAlert, "System Low Stock");
+
     generateProductID(p.id);
 
     FILE *fp = fopen("products.csv", "a");
     if (fp != NULL)
     {
-        fprintf(fp, "%s,%s,%s,%.2f,%d,%d,%d\n", p.id, p.name, p.category, p.price, p.quantity, p.minStock, p.restockQty);
+        fprintf(fp, "%s,%s,%s,%.2f,%d,%d,%d,%s\n", p.id, p.name, p.category, p.price, p.quantity, p.minStock, p.restockQty, p.stockAlert);
         fclose(fp);
 
         char logMsg[100];
@@ -274,23 +281,15 @@ void viewProducts()
     printf("                                      PRODUCT INVENTORY LIST\n");
     printf("====================================================================================================\n\n");
 
-    printf("%-8s %-25s %-18s %-10s %-8s %-10s %-10s %-8s\n",
-           "ID", "Product Name", "Category", "Price($)", "Qty", "MinStock", "ReorderQty", "Status");
+    printf("%-8s %-25s %-18s %-10s %-8s %-10s %-20s\n",
+           "ID", "Product Name", "Category", "Price($)", "Qty", "MinStock", "Stock Alert");
     printf("----------------------------------------------------------------------------------------------------\n");
 
     for (int i = 0; i < count; i++)
     {
-        char status[15];
-        if (products[i].quantity <= 0)
-            strcpy(status, "[OUT OF STOCK]");
-        else if (products[i].quantity <= products[i].minStock)
-            strcpy(status, "[LOW STOCK]");
-        else
-            strcpy(status, "OK");
-
-        printf("%-8s %-25s %-18s %-10.2f %-8d %-10d %-10d %-8s\n",
+        printf("%-8s %-25s %-18s %-10.2f %-8d %-10d %-20s\n",
                products[i].id, products[i].name, products[i].category,
-               products[i].price, products[i].quantity, products[i].minStock, products[i].restockQty, status);
+               products[i].price, products[i].quantity, products[i].minStock, products[i].stockAlert);
     }
 
     printf("----------------------------------------------------------------------------------------------------\n");
@@ -329,8 +328,8 @@ void searchProducts()
     fgets(query, sizeof(query), stdin);
     query[strcspn(query, "\n")] = '\0';
 
-    printf("\n%-8s %-25s %-18s %-10s %-8s %-10s %-10s\n",
-           "ID", "Product Name", "Category", "Price($)", "Qty", "MinStock", "ReorderQty");
+    printf("\n%-8s %-25s %-18s %-10s %-8s %-10s %-20s\n",
+           "ID", "Product Name", "Category", "Price($)", "Qty", "MinStock", "Stock Alert");
     printf("---------------------------------------------------------------------------------\n");
 
     int foundCount = 0;
@@ -341,9 +340,9 @@ void searchProducts()
         if (idx != -1)
         {
             foundCount = 1;
-            printf("%-8s %-25s %-18s %-10.2f %-8d %-10d %-10d\n",
+            printf("%-8s %-25s %-18s %-10.2f %-8d %-10d %-20s\n",
                    products[idx].id, products[idx].name, products[idx].category,
-                   products[idx].price, products[idx].quantity, products[idx].minStock, products[idx].restockQty);
+                   products[idx].price, products[idx].quantity, products[idx].minStock, products[idx].stockAlert);
         }
     }
     else
@@ -357,9 +356,9 @@ void searchProducts()
             if (match)
             {
                 foundCount++;
-                printf("%-8s %-25s %-18s %-10.2f %-8d %-10d %-10d\n",
+                printf("%-8s %-25s %-18s %-10.2f %-8d %-10d %-20s\n",
                        products[i].id, products[i].name, products[i].category,
-                       products[i].price, products[i].quantity, products[i].minStock, products[i].restockQty);
+                       products[i].price, products[i].quantity, products[i].minStock, products[i].stockAlert);
             }
         }
     }
@@ -375,7 +374,7 @@ void updateStock(const char *userId)
     struct Product products[1000];
     char targetId[10];
 
-    if (!selectProductHelper(targetId, "STOCK ARRIVAL / UPDATE")) return;
+    if (!selectProductHelper(targetId, "RESTOCK PRODUCT")) return;
 
     int count = loadAndSortProducts(products, 1000);
     int idx = binarySearchProduct(products, count, targetId);
@@ -390,6 +389,13 @@ void updateStock(const char *userId)
         if (scanf("%d", &addQty) == 1 && addQty > 0)
         {
             products[idx].quantity += addQty;
+            products[idx].restockQty = 0;
+
+            if (products[idx].quantity > products[idx].minStock)
+                strcpy(products[idx].stockAlert, "-");
+            else
+                strcpy(products[idx].stockAlert, "System Low Stock");
+
             saveProductsArray(products, count);
             printf("\nStock updated! New Stock: %d\n", products[idx].quantity);
 
@@ -410,66 +416,102 @@ void updateStock(const char *userId)
     pressEnter();
 }
 
-void checkLowStockAlerts()
+void manageLowStock(const char *userId)
 {
     createProductsFile();
     struct Product products[1000];
-    int count = loadAndSortProducts(products, 1000);
 
-    clearScreen();
-    printf("====================================================================================================\n");
-    printf("                               LOW STOCK & RESTOCK ALERTS REPORT\n");
-    printf("====================================================================================================\n\n");
-
-    int alertCount = 0;
-
-    printf("%-8s %-25s %-18s %-8s %-10s %-12s %-22s\n",
-           "ID", "Product Name", "Category", "Qty", "MinStock", "ReorderQty", "Alert Status");
-    printf("----------------------------------------------------------------------------------------------------\n");
-
-    for (int i = 0; i < count; i++)
+    while (1)
     {
-        int isLowStock = (products[i].quantity <= products[i].minStock);
-        int hasRestockReq = (products[i].restockQty > 0);
+        int count = loadAndSortProducts(products, 1000);
 
-        if (isLowStock || hasRestockReq)
+        for (int i = 0; i < count; i++)
         {
-            alertCount++;
-            char status[30];
+            if (strcmp(products[i].stockAlert, "Staff Reported") != 0)
+            {
+                if (products[i].quantity <= 0)
+                    strcpy(products[i].stockAlert, "System Out of Stock");
+                else if (products[i].quantity <= products[i].minStock)
+                    strcpy(products[i].stockAlert, "System Low Stock");
+                else
+                    strcpy(products[i].stockAlert, "-");
+            }
+        }
+        saveProductsArray(products, count);
 
-            if (products[i].quantity <= 0 && hasRestockReq)
-                strcpy(status, "[OUT OF STOCK & REORDERED]");
-            else if (products[i].quantity <= 0)
-                strcpy(status, "[OUT OF STOCK]");
-            else if (isLowStock && hasRestockReq)
-                strcpy(status, "[LOW STOCK & REORDERED]");
-            else if (isLowStock)
-                strcpy(status, "[LOW STOCK]");
+        clearScreen();
+        printf("====================================================================================================\n");
+        printf("                                      MANAGE LOW STOCK ALERTS\n");
+        printf("====================================================================================================\n\n");
+
+        printf("%-8s %-25s %-18s %-10s %-10s %-20s\n",
+               "ID", "Product Name", "Category", "Stock Qty", "Min Qty", "Stock Alert");
+        printf("----------------------------------------------------------------------------------------------------\n");
+
+        int alertCount = 0;
+        for (int i = 0; i < count; i++)
+        {
+            if (strcmp(products[i].stockAlert, "-") != 0 || products[i].quantity <= products[i].minStock || products[i].restockQty > 0)
+            {
+                alertCount++;
+                printf("%-8s %-25s %-18s %-10d %-10d %-20s\n",
+                       products[i].id, products[i].name, products[i].category,
+                       products[i].quantity, products[i].minStock, products[i].stockAlert);
+            }
+        }
+        printf("----------------------------------------------------------------------------------------------------\n");
+        printf("Total Low Stock / Alert Items: %d\n\n", alertCount);
+
+        printf("Enter Product ID to Restock (or '0' to back) : ");
+        char prodId[10];
+        if (scanf("%9s", prodId) != 1) return;
+        while (getchar() != '\n');
+
+        if (strcmp(prodId, "0") == 0) return;
+
+        int idx = binarySearchProduct(products, count, prodId);
+
+        if (idx != -1)
+        {
+            printf("\nProduct Matched: %s (%s)\nCurrent Stock: %d | Min Stock: %d | Status: %s\n",
+                   products[idx].id, products[idx].name, products[idx].quantity, products[idx].minStock, products[idx].stockAlert);
+
+            printf("Enter Quantity to Add : ");
+            int addQty = 0;
+            if (scanf("%d", &addQty) == 1 && addQty > 0)
+            {
+                products[idx].quantity += addQty;
+                products[idx].restockQty = 0;
+
+                if (products[idx].quantity > products[idx].minStock)
+                    strcpy(products[idx].stockAlert, "-");
+                else
+                    strcpy(products[idx].stockAlert, "System Low Stock");
+
+                saveProductsArray(products, count);
+                printf("\nRestock successful! New Stock: %d\n", products[idx].quantity);
+
+                char logMsg[100];
+                sprintf(logMsg, "Restocked %d units for Product %s (New Stock: %d)", addQty, prodId, products[idx].quantity);
+                logAction(userId, logMsg);
+            }
             else
-                strcpy(status, "[RESTOCK REQUESTED]");
-
-            printf("%-8s %-25s %-18s %-8d %-10d %-12d %-22s\n",
-                   products[i].id, products[i].name, products[i].category,
-                   products[i].quantity, products[i].minStock, products[i].restockQty, status);
+            {
+                printf("\nInvalid quantity!\n");
+            }
+            pressEnter();
+        }
+        else
+        {
+            printf("\nProduct ID '%s' not found!\n", prodId);
+            pressEnter();
         }
     }
-
-    printf("----------------------------------------------------------------------------------------------------\n");
-    if (alertCount == 0)
-    {
-        printf("All products have sufficient stock levels and no pending restock requests.\n");
-    }
-    else
-    {
-        printf("ATTENTION: %d product(s) require attention for low stock or pending restock!\n", alertCount);
-    }
-
-    pressEnter();
 }
 
-void viewRestockRequests()
+void checkLowStockAlerts()
 {
-    checkLowStockAlerts();
+    manageLowStock("SYSTEM");
 }
 
 void requestRestock(const char *userId)
@@ -487,109 +529,22 @@ void requestRestock(const char *userId)
     {
         printf("\nProduct Name      : %s\n", products[idx].name);
         printf("Current Quantity  : %d\n", products[idx].quantity);
-        printf("Current Reorder   : %d\n", products[idx].restockQty);
         printf("Enter Quantity to Request : ");
         int reqQty = 0;
         if (scanf("%d", &reqQty) == 1 && reqQty > 0)
         {
             products[idx].restockQty += reqQty;
+            strcpy(products[idx].stockAlert, "Staff Reported");
             saveProductsArray(products, count);
             printf("\nRestock request of %d units added for product %s!\n", reqQty, products[idx].id);
 
             char logMsg[100];
-            sprintf(logMsg, "Requested restock of %d units for Product %s", reqQty, products[idx].id);
+            sprintf(logMsg, "Requested restock of %d units for Product %s (Staff Reported)", reqQty, products[idx].id);
             logAction(userId, logMsg);
         }
         else
         {
             printf("\nInvalid quantity!\n");
-        }
-    }
-    else
-    {
-        printf("\nProduct ID %s not found!\n", prodId);
-    }
-
-    pressEnter();
-}
-
-void processRestockRequest(const char *userId)
-{
-    createProductsFile();
-    struct Product products[1000];
-    char prodId[10];
-
-    clearScreen();
-    printf("=========================================\n");
-    printf("         PROCESS RESTOCK REQUEST\n");
-    printf("=========================================\n\n");
-
-    int count = loadAndSortProducts(products, 1000);
-    int pendingCount = 0;
-
-    printf("%-10s %-25s %-12s %-12s\n", "Prod ID", "Product Name", "Current Stock", "Requested Qty");
-    printf("------------------------------------------------------------------\n");
-    for (int i = 0; i < count; i++)
-    {
-        if (products[i].restockQty > 0)
-        {
-            pendingCount++;
-            printf("%-10s %-25s %-12d %-12d\n", products[i].id, products[i].name, products[i].quantity, products[i].restockQty);
-        }
-    }
-    printf("------------------------------------------------------------------\n\n");
-
-    if (pendingCount == 0)
-    {
-        printf("No pending restock requests found.\n");
-        pressEnter();
-        return;
-    }
-
-    printf("Enter Product ID to Fulfill Restock (or '0' to cancel) : ");
-    scanf("%9s", prodId);
-    while (getchar() != '\n');
-
-    if (strcmp(prodId, "0") == 0) return;
-
-    int idx = binarySearchProduct(products, count, prodId);
-
-    if (idx != -1)
-    {
-        if (products[idx].restockQty <= 0)
-        {
-            printf("\nProduct %s does not have any pending restock requests.\n", prodId);
-        }
-        else
-        {
-            printf("\nProduct Details: ID: %s | Name: %s | Stock: %d | Requested: %d\n",
-                   products[idx].id, products[idx].name, products[idx].quantity, products[idx].restockQty);
-            printf("Approve or Reject request? (1 = Approve & Add Stock / 2 = Reject Request / 0 = Cancel) : ");
-            int decision = 0;
-            scanf("%d", &decision);
-
-            if (decision == 1)
-            {
-                products[idx].quantity += products[idx].restockQty;
-                printf("\nRestock Approved! Added %d units to Stock. New Stock: %d\n", products[idx].restockQty, products[idx].quantity);
-
-                char logMsg[100];
-                sprintf(logMsg, "Approved restock of %d units for Product %s (New Stock: %d)", products[idx].restockQty, products[idx].id, products[idx].quantity);
-                logAction(userId, logMsg);
-
-                products[idx].restockQty = 0;
-                saveProductsArray(products, count);
-            }
-            else if (decision == 2)
-            {
-                printf("\nRestock Request Rejected.\n");
-                char logMsg[100];
-                sprintf(logMsg, "Rejected restock request for Product %s", products[idx].id);
-                logAction(userId, logMsg);
-
-                products[idx].restockQty = 0;
-                saveProductsArray(products, count);
-            }
         }
     }
     else

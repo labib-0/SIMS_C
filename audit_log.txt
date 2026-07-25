@@ -23,3 +23,11 @@
 [25/07/2026 06:55:58] [A100] Added Product P006 (Candy)
 [25/07/2026 06:59:32] [A100] Logged in successfully
 [25/07/2026 07:03:20] [A100] Logged in successfully
+[25/07/2026 07:09:36] [A100] Logged in successfully
+[25/07/2026 07:10:22] [S100] Deleted Sales Staff account S100
+[25/07/2026 07:11:03] [S100] Created Sales Staff account S100 (Masuk)
+[25/07/2026 07:14:02] [A100] Logged in successfully
+[25/07/2026 07:14:46] [S101] Created Sales Staff account S101 (Rim)
+[25/07/2026 07:15:26] [A100] Added Product P007 (Meat)
+[25/07/2026 07:16:25] [A100] Updated product details for p003
+[25/07/2026 07:17:42] [A100] Restocked 40 units for Product p001 (New Stock: 50)

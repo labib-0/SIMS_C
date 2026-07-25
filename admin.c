@@ -33,8 +33,7 @@ void viewProducts();
 void searchProducts();
 
 void updateStock(const char *userId);
-void checkLowStockAlerts();
-void processRestockRequest(const char *userId);
+void manageLowStock(const char *userId);
 
 void processSale(const char *userId);
 void viewTransactions();
@@ -265,6 +264,45 @@ void userManagementMenu(const char *userId)
     }
 }
 
+void stockManagementMenu(const char *userId)
+{
+    int choice;
+    while (1)
+    {
+        clearScreen();
+        printf("=========================================\n");
+        printf("            STOCK MANAGEMENT\n");
+        printf("=========================================\n\n");
+        printf("1. Restock Product\n");
+        printf("2. Manage Low Stock\n");
+        printf("0. Back\n");
+        printf("\nEnter Choice : ");
+
+        if (scanf("%d", &choice) != 1)
+        {
+            while (getchar() != '\n');
+            printf("\nInvalid Input!\n");
+            pressEnter();
+            continue;
+        }
+
+        switch (choice)
+        {
+            case 1:
+                updateStock(userId);
+                break;
+            case 2:
+                manageLowStock(userId);
+                break;
+            case 0:
+                return;
+            default:
+                printf("\nInvalid Choice!\n");
+                pressEnter();
+        }
+    }
+}
+
 void backupData(const char *userId)
 {
     clearScreen();
@@ -342,7 +380,7 @@ void adminDashboard(char userId[], char userName[])
 
         printf("1. User Management\n");
         printf("2. Product Management\n");
-        printf("3. Stock Management & Restock Approvals\n");
+        printf("3. Stock Management\n");
         printf("4. Process Sales Transaction\n");
         printf("5. View Transaction History\n");
         printf("6. Reports System\n");
@@ -390,23 +428,7 @@ void adminDashboard(char userId[], char userName[])
                 }
                 break;
             case 3:
-                {
-                    int subChoice;
-                    clearScreen();
-                    printf("=========================================\n");
-                    printf("            STOCK MANAGEMENT\n");
-                    printf("=========================================\n\n");
-                    printf("1. Restock Product (Add Quantity)\n");
-                    printf("2. Check Low Stock & Restock Alerts\n");
-                    printf("3. Process / Approve Restock Request\n");
-                    printf("Choice: ");
-                    if (scanf("%d", &subChoice) == 1)
-                    {
-                        if (subChoice == 1) updateStock(userId);
-                        else if (subChoice == 2) checkLowStockAlerts();
-                        else if (subChoice == 3) processRestockRequest(userId);
-                    }
-                }
+                stockManagementMenu(userId);
                 break;
             case 4:
                 processSale(userId);
