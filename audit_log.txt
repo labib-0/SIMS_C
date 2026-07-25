@@ -38,3 +38,9 @@
 [25/07/2026 07:36:38] [A100] Restocked 15 units for Product p015 (New Stock: 100)
 [25/07/2026 07:40:16] [A100] Logged in successfully
 [25/07/2026 07:40:58] [A100] Processed Sale T10006: Product P006 (Qty: 6, Total: $270.00)
+[25/07/2026 07:49:11] [A100] Logged in successfully
+[25/07/2026 07:57:26] [A100] Logged out
+[25/07/2026 07:57:40] [M100] Logged in successfully
+[25/07/2026 07:59:48] [M100] Viewed Inventory Report
+[25/07/2026 08:01:46] [M100] Logged out
+[25/07/2026 08:02:33] [S100] Logged in successfully
