@@ -2,3 +2,4 @@ ProductID,Name,Category,Price,Quantity,MinStock,RestockQty,StockAlert
 P100,Gaming Laptop,Electronics,1200.00,10,3,0,-
 P101,Wireless Mouse,Electronics,25.50,50,10,0,-
 P102,Mechanical Keyboard,Electronics,85.00,4,5,0,System Low Stock
+P103,Rice,Food,70.00,100,10,0,-

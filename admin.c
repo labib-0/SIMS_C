@@ -111,7 +111,7 @@ void addUserMenu()
     printf("1. Add Admin\n");
     printf("2. Add Store Manager\n");
     printf("3. Add Sales Staff\n");
-    printf("4. Back\n");
+    printf("0. Back\n");
     printf("\nEnter Choice : ");
 
     int choice;
@@ -128,7 +128,7 @@ void addUserMenu()
         case 1: addUser('A', "Admin"); break;
         case 2: addUser('M', "Store Manager"); break;
         case 3: addUser('S', "Sales Staff"); break;
-        case 4: return;
+        case 0: return;
         default:
             printf("\nInvalid Choice!\n");
             pressEnter();
@@ -149,8 +149,9 @@ void deleteUserAny()
     printf("               DELETE USER\n");
     printf("=========================================\n\n");
 
-    printf("Enter User ID to Delete : ");
+    printf("Enter User ID to Delete (or '0' to back) : ");
     scanf("%9s", id);
+    if (strcmp(id, "0") == 0) return;
 
     for (int i = 0; i < count; i++)
     {
@@ -240,7 +241,7 @@ void userManagementMenu(const char *userId)
         printf("1. Add User\n");
         printf("2. Delete User\n");
         printf("3. View All Users\n");
-        printf("4. Back to Dashboard\n");
+        printf("0. Back to Dashboard\n");
         printf("\nEnter Choice : ");
 
         if(scanf("%d", &choice) != 1)
@@ -256,7 +257,7 @@ void userManagementMenu(const char *userId)
             case 1: addUserMenu(); break;
             case 2: deleteUserAny(); break;
             case 3: viewAllUsers(); break;
-            case 4: return;
+            case 0: return;
             default:
                 printf("\nInvalid Choice!\n");
                 pressEnter();
@@ -387,7 +388,7 @@ void adminDashboard(char userId[], char userName[])
         printf("7. Data Management\n");
         printf("8. View System Audit Logs\n");
         printf("9. My Profile (View & Edit)\n");
-        printf("10. Logout\n");
+        printf("0. Logout\n");
         printf("\n=================================================\n");
         printf("Enter Choice : ");
 
@@ -416,6 +417,7 @@ void adminDashboard(char userId[], char userName[])
                     printf("3. Delete Product\n");
                     printf("4. View All Products\n");
                     printf("5. Search Products\n");
+                    printf("0. Back\n");
                     printf("Choice: ");
                     if (scanf("%d", &subChoice) == 1)
                     {
@@ -424,6 +426,7 @@ void adminDashboard(char userId[], char userName[])
                         else if (subChoice == 3) deleteProduct(userId);
                         else if (subChoice == 4) viewProducts();
                         else if (subChoice == 5) searchProducts();
+                        else if (subChoice == 0) break;
                     }
                 }
                 break;
@@ -446,12 +449,14 @@ void adminDashboard(char userId[], char userName[])
                     printf("1. Inventory Report\n");
                     printf("2. Sales Summary Report\n");
                     printf("3. Product Performance Report\n");
+                    printf("0. Back\n");
                     printf("Choice: ");
                     if (scanf("%d", &subChoice) == 1)
                     {
                         if (subChoice == 1) generateInventoryReport(userId);
                         else if (subChoice == 2) generateSalesReport(userId);
                         else if (subChoice == 3) generatePerformanceReport(userId);
+                        else if (subChoice == 0) break;
                     }
                 }
                 break;
@@ -464,11 +469,13 @@ void adminDashboard(char userId[], char userName[])
                     printf("=========================================\n\n");
                     printf("1. Backup System Data\n");
                     printf("2. Restore System Data\n");
+                    printf("0. Back\n");
                     printf("Choice: ");
                     if (scanf("%d", &subChoice) == 1)
                     {
                         if (subChoice == 1) backupData(userId);
                         else if (subChoice == 2) restoreData(userId);
+                        else if (subChoice == 0) break;
                     }
                 }
                 break;
@@ -478,7 +485,7 @@ void adminDashboard(char userId[], char userName[])
             case 9:
                 viewAndEditProfile(userId);
                 break;
-            case 10:
+            case 0:
                 logAction(userId, "Logged out");
                 printf("\nLogging out...\n");
                 delay();

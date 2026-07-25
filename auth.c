@@ -325,7 +325,7 @@ void viewAndEditProfile(const char *userId)
         printf("2. Edit Date of Birth\n");
         printf("3. Edit Email Address\n");
         printf("4. Change Password\n");
-        printf("5. Back to Dashboard\n");
+        printf("0. Back to Dashboard\n");
         printf("\nEnter Choice : ");
 
         int choice;
@@ -338,7 +338,7 @@ void viewAndEditProfile(const char *userId)
         }
         while (getchar() != '\n');
 
-        if (choice == 5) return;
+        if (choice == 0) return;
 
         if (choice == 1)
         {

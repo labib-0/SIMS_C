@@ -40,7 +40,7 @@ void storeManagerDashboard(char userId[], char userName[])
         printf("6. View Transaction History\n");
         printf("7. Reports System\n");
         printf("8. My Profile (View & Edit)\n");
-        printf("9. Logout\n");
+        printf("0. Logout\n");
         printf("\n=================================================\n");
         printf("Enter Choice : ");
 
@@ -82,19 +82,21 @@ void storeManagerDashboard(char userId[], char userName[])
                     printf("1. Inventory Report\n");
                     printf("2. Sales Summary Report\n");
                     printf("3. Product Performance Report\n");
+                    printf("0. Back\n");
                     printf("Choice: ");
                     if (scanf("%d", &subChoice) == 1)
                     {
                         if (subChoice == 1) generateInventoryReport(userId);
                         else if (subChoice == 2) generateSalesReport(userId);
                         else if (subChoice == 3) generatePerformanceReport(userId);
+                        else if (subChoice == 0) break;
                     }
                 }
                 break;
             case 8:
                 viewAndEditProfile(userId);
                 break;
-            case 9:
+            case 0:
                 logAction(userId, "Logged out");
                 printf("\nLogging out...\n");
                 delay();

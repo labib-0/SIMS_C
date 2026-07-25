@@ -10,7 +10,7 @@ void logAction(const char *userId, const char *action);
 void processSale(const char *userId);
 void viewProducts();
 void searchProducts();
-void checkLowStockAlerts();
+void manageLowStock(const char *userId);
 void requestRestock(const char *userId);
 void viewTransactions();
 void viewAndEditProfile(const char *userId);
@@ -30,11 +30,11 @@ void salesStaffDashboard(char userId[], char userName[])
         printf("1. Process Sales Transaction\n");
         printf("2. View Products\n");
         printf("3. Search Products\n");
-        printf("4. Low Stock Alerts\n");
+        printf("4. Manage Low Stock\n");
         printf("5. Request Restock\n");
         printf("6. View Transaction History\n");
         printf("7. My Profile (View & Edit)\n");
-        printf("8. Logout\n");
+        printf("0. Logout\n");
         printf("\n=================================================\n");
         printf("Enter Choice : ");
 
@@ -58,7 +58,7 @@ void salesStaffDashboard(char userId[], char userName[])
                 searchProducts();
                 break;
             case 4:
-                checkLowStockAlerts();
+                manageLowStock(userId);
                 break;
             case 5:
                 requestRestock(userId);
@@ -69,7 +69,7 @@ void salesStaffDashboard(char userId[], char userName[])
             case 7:
                 viewAndEditProfile(userId);
                 break;
-            case 8:
+            case 0:
                 logAction(userId, "Logged out");
                 printf("\nLogging out...\n");
                 delay();

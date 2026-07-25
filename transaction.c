@@ -11,6 +11,7 @@ struct Product
     int quantity;
     int minStock;
     int restockQty;
+    char stockAlert[30];
 };
 
 struct Transaction
@@ -223,6 +224,7 @@ void viewTransactions()
 
     printf("1. View All Transactions\n");
     printf("2. Filter Transactions by Date Range\n");
+    printf("0. Back\n");
     printf("Choice: ");
 
     int choice;
@@ -234,6 +236,8 @@ void viewTransactions()
         return;
     }
     while (getchar() != '\n');
+
+    if (choice == 0) return;
 
     char startDateStr[15] = "", endDateStr[15] = "";
     long startInt = 0, endInt = 99999999L;

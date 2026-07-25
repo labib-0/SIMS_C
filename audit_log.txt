@@ -31,3 +31,5 @@
 [25/07/2026 07:15:26] [A100] Added Product P007 (Meat)
 [25/07/2026 07:16:25] [A100] Updated product details for p003
 [25/07/2026 07:17:42] [A100] Restocked 40 units for Product p001 (New Stock: 50)
+[25/07/2026 07:27:07] [A100] Logged in successfully
+[25/07/2026 07:27:35] [A100] Added Product P103 (Rice)
