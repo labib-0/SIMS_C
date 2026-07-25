@@ -103,7 +103,40 @@ void addUser(char prefix, char role[])
     pressEnter();
 }
 
-void deleteUser(char prefix, char role[])
+void addUserMenu()
+{
+    clearScreen();
+    printf("=========================================\n");
+    printf("                ADD USER\n");
+    printf("=========================================\n\n");
+    printf("1. Add Admin\n");
+    printf("2. Add Store Manager\n");
+    printf("3. Add Sales Staff\n");
+    printf("4. Back\n");
+    printf("\nEnter Choice : ");
+
+    int choice;
+    if (scanf("%d", &choice) != 1)
+    {
+        while (getchar() != '\n');
+        printf("\nInvalid Input!\n");
+        pressEnter();
+        return;
+    }
+
+    switch (choice)
+    {
+        case 1: addUser('A', "Admin"); break;
+        case 2: addUser('M', "Store Manager"); break;
+        case 3: addUser('S', "Sales Staff"); break;
+        case 4: return;
+        default:
+            printf("\nInvalid Choice!\n");
+            pressEnter();
+    }
+}
+
+void deleteUserAny()
 {
     struct User users[500];
     int count = loadAndSortUsers(users, 500);
@@ -114,10 +147,10 @@ void deleteUser(char prefix, char role[])
 
     clearScreen();
     printf("=========================================\n");
-    printf("            DELETE %s\n", role);
+    printf("               DELETE USER\n");
     printf("=========================================\n\n");
 
-    printf("Enter %s ID : ", role);
+    printf("Enter User ID to Delete : ");
     scanf("%9s", id);
 
     for (int i = 0; i < count; i++)
@@ -129,12 +162,12 @@ void deleteUser(char prefix, char role[])
 
     if (idx == -1)
     {
-        printf("\n%s Not Found!\n", role);
+        printf("\nUser ID '%s' Not Found!\n", id);
         pressEnter();
         return;
     }
 
-    if (prefix == 'A')
+    if (users[idx].id[0] == 'A')
     {
         if (adminCount == 1)
         {
@@ -153,6 +186,9 @@ void deleteUser(char prefix, char role[])
         }
     }
 
+    char role[20];
+    strcpy(role, users[idx].role);
+
     for (int i = idx; i < count - 1; i++)
     {
         users[i] = users[i + 1];
@@ -165,35 +201,31 @@ void deleteUser(char prefix, char role[])
     sprintf(logMsg, "Deleted %s account %s", role, id);
     logAction(id, logMsg);
 
-    printf("\n%s Deleted Successfully.\n", role);
+    printf("\nUser %s (%s) Deleted Successfully.\n", id, role);
     pressEnter();
 }
 
-void viewUsers(char prefix, char role[])
+void viewAllUsers()
 {
     struct User users[500];
     int count = loadAndSortUsers(users, 500);
 
     clearScreen();
-    printf("========================================================================================\n");
-    printf("                                  %-15s LIST\n", role);
-    printf("========================================================================================\n\n");
+    printf("====================================================================================================\n");
+    printf("                                         ALL USERS LIST\n");
+    printf("====================================================================================================\n\n");
 
-    printf("%-5s %-10s %-25s %-15s %-25s\n", "No.", "User ID", "Full Name", "DOB", "Email");
-    printf("----------------------------------------------------------------------------------------\n");
+    printf("%-5s %-10s %-25s %-18s %-15s %-25s\n", "No.", "User ID", "Full Name", "Role", "DOB", "Email");
+    printf("----------------------------------------------------------------------------------------------------\n");
 
-    int displayCount = 0;
     for (int i = 0; i < count; i++)
     {
-        if (users[i].id[0] == prefix)
-        {
-            printf("%-5d %-10s %-25s %-15s %-25s\n",
-                   ++displayCount, users[i].id, users[i].name, users[i].dob, users[i].email);
-        }
+        printf("%-5d %-10s %-25s %-18s %-15s %-25s\n",
+               i + 1, users[i].id, users[i].name, users[i].role, users[i].dob, users[i].email);
     }
 
-    printf("\n----------------------------------------------------------------------------------------\n");
-    printf("Total %s : %d\n", role, displayCount);
+    printf("----------------------------------------------------------------------------------------------------\n");
+    printf("Total Registered Users: %d\n", count);
     pressEnter();
 }
 
@@ -206,16 +238,10 @@ void userManagementMenu(const char *userId)
         printf("=========================================\n");
         printf("             USER MANAGEMENT\n");
         printf("=========================================\n\n");
-        printf("1. Add Admin\n");
-        printf("2. Add Store Manager\n");
-        printf("3. Add Sales Staff\n");
-        printf("4. Delete Admin\n");
-        printf("5. Delete Store Manager\n");
-        printf("6. Delete Sales Staff\n");
-        printf("7. View All Admins\n");
-        printf("8. View All Store Managers\n");
-        printf("9. View All Sales Staff\n");
-        printf("10. Back to Dashboard\n");
+        printf("1. Add User\n");
+        printf("2. Delete User\n");
+        printf("3. View All Users\n");
+        printf("4. Back to Dashboard\n");
         printf("\nEnter Choice : ");
 
         if(scanf("%d", &choice) != 1)
@@ -228,16 +254,10 @@ void userManagementMenu(const char *userId)
 
         switch(choice)
         {
-            case 1: addUser('A', "Admin"); break;
-            case 2: addUser('M', "Store Manager"); break;
-            case 3: addUser('S', "Sales Staff"); break;
-            case 4: deleteUser('A', "Admin"); break;
-            case 5: deleteUser('M', "Store Manager"); break;
-            case 6: deleteUser('S', "Sales Staff"); break;
-            case 7: viewUsers('A', "Admin"); break;
-            case 8: viewUsers('M', "Store Manager"); break;
-            case 9: viewUsers('S', "Sales Staff"); break;
-            case 10: return;
+            case 1: addUserMenu(); break;
+            case 2: deleteUserAny(); break;
+            case 3: viewAllUsers(); break;
+            case 4: return;
             default:
                 printf("\nInvalid Choice!\n");
                 pressEnter();
