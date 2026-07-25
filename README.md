@@ -9,76 +9,85 @@ A high-performance, modular, menu-driven command-line **Stock and Inventory Mana
 
 ---
 
-## 🚀 Key Features
+## 🚀 System Architecture & Key Features
 
-- **🔐 Role-Based Access Control (RBAC)**:
-  - **Administrator (`A`)**: Full system access, User management, Product CRUD, Stock management, Data backup/restore, Audit log analysis.
-  - **Store Manager (`M`)**: Product search/viewing, Stock arrival updates, Low-stock alerts, Restock approvals, Transaction history, Business reports.
-  - **Sales Staff (`S`)**: Sales transaction processing, Product search, Low-stock alerts, Restock requests, Personal transaction history.
-
-- **⚡ High Performance & Binary Search**:
-  - Implements $O(\log N)$ **Binary Search** algorithms across sorted memory arrays for instant User ID and Product ID lookups.
-
-- **🛒 Interactive Sales Processing**:
-  - Direct catalog product listing table and quick ID selection.
-  - Instant stock deduction upon sale completion.
-  - Automatic timestamped recording in `transactions.csv`.
-  - Automatic low-stock warnings when inventory drops below `MinStock`.
-
-- **📦 Product & Stock Management**:
-  - Simple, clean sequential ID generation (`P001`, `P002`, `P003`...).
-  - Integrated stock replenishment requests and approval workflows.
-  - Unified **Low Stock & Restock Alerts** report.
-
-- **📊 Reports & Business Analytics**:
-  - **Inventory Report**: Product counts, total stock, and financial valuation.
-  - **Sales Summary Report**: Total revenue and units sold for a date range (`DD/MM/YYYY`).
-  - **Performance Report**: Top-selling products ranked by sales volume.
-  - **File Export**: 1-click export of any report to `.txt` files (`inventory_report.txt`, `sales_report.txt`, `performance_report.txt`).
-
-- **🛡️ Security & Audit Logging**:
-  - Standard password hashing algorithm for credential storage.
-  - In-app password change for logged-in users.
-  - Password recovery mechanism (`Forgot Password`) via User ID and Date of Birth verification.
-  - Comprehensive, real-time audit trail in `audit_log.txt`.
-
-- **💾 Data Backup & Restoration**:
-  - 1-click backup of all CSV databases and logs into `backups/`.
-  - Restoration capability to recover system databases from backup files.
+### 🔐 1. Role-Based Access Control (RBAC)
+- **Administrator (`A`)**:
+  - **User Management**: Compact user lifecycle operations (`Add User`, `Delete User`, `View All Users`).
+  - **Product Management**: Complete CRUD operations (`Add`, `Update`, `Delete`, `View`, `Search`).
+  - **Stock Management**: Direct inventory table view with dynamic stock alert statuses and instant restocking.
+  - **POS Sales Processing**: Multi-item shopping cart sales and itemized invoice receipt generation.
+  - **Reports & Security**: Full business reports, system data backups/restores, audit log viewing, and profile management.
+- **Store Manager (`M`)**:
+  - **Product Management**: Complete product catalog management (`Add`, `Update`, `Delete`, `View`, `Search`).
+  - **Stock Replenishment Requests**: Submit restock requests (`Staff Reported` alerts for Admin approval).
+  - **Sales & Reports**: View sales transaction history, inventory valuation, and sales summary reports.
+  - **My Profile**: View and update account credentials.
+- **Sales Staff (`S`)**:
+  - **POS Sales Processing**: Interactive multi-item shopping cart with live `TOTAL AMOUNT SO FAR` and invoice generation.
+  - **Catalog Access**: View and search products in the store catalog.
+  - **Restock Requests**: Flag low-stock items for manager/admin replenishment.
+  - **My Profile**: View and update personal profile details.
 
 ---
 
-## 🔑 Default Administrator Credentials
+### 🛒 2. POS Multi-Item Shopping Cart & Invoicing
+- **Interactive Shopping Cart**: Add multiple products and quantities to a live cart with real-time stock availability checks.
+- **Live Amount Tracker**: Displays `TOTAL AMOUNT SO FAR : $XXX.XX` as items are added or updated in the cart.
+- **Itemized Sales Invoice**: Instant checkout (`1`) deducts stock from `products.csv`, logs itemized transactions to `transactions.csv`, and prints a professional sales receipt on terminal.
 
-Upon initial launch, if no users exist in `users.csv`, the system automatically initializes a default Admin account:
+---
 
-| Role | User ID | Password | Date of Birth |
-|---|---|---|---|
-| **Administrator** | `A100` | `Admin123` | `01/01/2000` |
+### 📦 3. Stock Management & Alert System
+- **Direct Table Listing**: Formatted screen displaying `ID`, `Product Name`, `Category`, `Price ($)`, `Stock Qty`, and `Stock Alert`.
+- **Dynamic System Alerts**:
+  - `System Low Stock`: Triggered automatically when `Stock Qty <= Min Qty`.
+  - `System Out of Stock`: Triggered when `Stock Qty <= 0`.
+  - `Staff Reported`: Triggered when staff/manager manually submits a reorder request.
+
+---
+
+### 🔑 4. Multi-Factor Security & Profile Management
+- **Email Format Validation**: Ensures valid email addresses with `@` and `.` domain structure validation.
+- **4-Tier Password Recovery (`Forgot Password`)**: Requires multi-factor verification of **User ID**, **Full Name**, **Date of Birth (DOB)**, and **Email Address** before resetting password.
+- **My Profile (`View & Edit`)**: Dedicated profile section on all dashboards allowing users to view details and edit Full Name, DOB, Email, or Password.
+- **Standardized Navigation**: `0. Logout` on main dashboards, `0. Back` on submenus, and `0. Exit` on the startup menu.
+- **Crisp UX Transitions**: Ultra-fast 0.5-second (`500ms`) smooth screen transitions (`usleep(500000)` / `Sleep(500)`).
+
+---
+
+## 🔑 Default System Credentials
+
+Upon initial launch, the system automatically initializes default accounts in `users.csv` if no records exist:
+
+| Role | User ID | Password | Date of Birth | Email |
+|---|---|---|---|---|
+| **Administrator** | `A100` | `Admin123` | `01/01/2000` | `admin@sims.com` |
+| **Store Manager** | `M100` | `Asad123` | `10/10/2000` | `asad@sims.com` |
+| **Sales Staff** | `S100` | `Masuk123` | `10/10/2000` | `masuk@sims.com` |
 
 ---
 
 ## 🏗️ Project Architecture & File Structure
 
-The project follows a clean, decoupled, multi-module architecture:
+The project follows a clean, decoupled, multi-module C architecture:
 
 ```text
 SIMS_C/
-├── main.c           # Entry point, database initializations, and role menu dispatcher
-├── utility.c        # Centralized utilities, date/time formatting, & Binary Search algorithms
-├── auth.c           # Password hashing, validation, login, and password recovery
+├── main.c           # Program entry point, database initializers, & roleMenu router
+├── utility.c        # Centralized utilities, date/time, usleep delay, & Binary Search
+├── auth.c           # Password hashing, validation, login, forgot password, & My Profile
 ├── admin.c          # Administrator Dashboard & User Management features
 ├── manager.c        # Store Manager Dashboard
 ├── staff.c          # Sales Staff Dashboard
-├── inventory.c      # Product CRUD, stock arrival, alerts & restock workflows
-├── transaction.c    # Interactive sales processing & transaction history
-├── reports.c        # Inventory, Sales, Performance reporting & audit log viewer
+├── inventory.c      # Product CRUD, stock management, stock alerts, & restock requests
+├── transaction.c    # POS multi-item shopping cart, checkout invoicing, & sales history
+├── reports.c        # Inventory, sales summary, product performance reports, & audit log
 │
-├── users.csv        # Registered users database
-├── products.csv     # Product inventory database
-├── transactions.csv # Sales transaction log
-├── audit_log.txt    # System audit trail
-└── SIMS_Architecture_Roadmap_Bangla.pdf # Architecture guide & roadmap (Bangla)
+├── users.csv        # Registered users database (UserID,FullName,Role,DOB,Email,Password)
+├── products.csv     # Product inventory database (ProductID,Name,Category,Price,Quantity,MinStock,RestockQty,StockAlert)
+├── transactions.csv # Sales transaction log (TransactionID,Date,Time,ProductID,ProductName,Quantity,UnitPrice,TotalPrice,SoldBy)
+└── audit_log.txt    # Real-time system audit trail
 ```
 
 ---
@@ -87,7 +96,7 @@ SIMS_C/
 
 ### Prerequisites
 - Any standard C compiler (**GCC** or **Clang**).
-- Compatible with **macOS** and **Windows 11** / Linux.
+- Cross-platform compatible with **macOS** and **Windows 11 / Linux**.
 
 ### 1. Compilation
 Compile all modular source files using `gcc`:
