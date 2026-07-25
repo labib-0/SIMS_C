@@ -4,6 +4,12 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 struct User
 {
     char id[10];
@@ -58,9 +64,9 @@ void pressEnter()
 void delay()
 {
 #ifdef _WIN32
-    system("timeout /t 1 > nul");
+    Sleep(500);
 #else
-    system("sleep 1");
+    usleep(500000);
 #endif
 }
 
