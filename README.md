@@ -20,7 +20,7 @@ A high-performance, modular, menu-driven command-line **Stock and Inventory Mana
   - Implements $O(\log N)$ **Binary Search** algorithms across sorted memory arrays for instant User ID and Product ID lookups.
 
 - **🛒 Interactive Sales Processing**:
-  - Search products by name (with real-time substring search) or catalog browsing.
+  - Direct catalog product listing table and quick ID selection.
   - Instant stock deduction upon sale completion.
   - Automatic timestamped recording in `transactions.csv`.
   - Automatic low-stock warnings when inventory drops below `MinStock`.
@@ -28,7 +28,7 @@ A high-performance, modular, menu-driven command-line **Stock and Inventory Mana
 - **📦 Product & Stock Management**:
   - Simple, clean sequential ID generation (`P001`, `P002`, `P003`...).
   - Integrated stock replenishment requests and approval workflows.
-  - Merged single-database storage for product details and restock quantities in `products.csv`.
+  - Unified **Low Stock & Restock Alerts** report.
 
 - **📊 Reports & Business Analytics**:
   - **Inventory Report**: Product counts, total stock, and financial valuation.
@@ -93,19 +93,19 @@ SIMS_C/
 Compile all modular source files using `gcc`:
 
 ```bash
-gcc -Wall main.c utility.c auth.c inventory.c transaction.c reports.c admin.c manager.c staff.c -o sim_app
+gcc -Wall main.c utility.c auth.c inventory.c transaction.c reports.c admin.c manager.c staff.c -o sims
 ```
 
 ### 2. Execution
 Run the compiled executable:
 
 ```bash
-./sim_app
+./sims
 ```
 
 On Windows (Command Prompt / PowerShell):
 ```cmd
-sim_app.exe
+sims.exe
 ```
 
 ---
