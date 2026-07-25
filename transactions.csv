@@ -1,0 +1,3 @@
+TransactionID,Date,Time,ProductID,ProductName,Quantity,UnitPrice,TotalPrice,SoldBy
+T10001,24/07/2026,10:15:00,P100,Gaming Laptop,2,1200.00,2400.00,S100
+T10002,24/07/2026,11:30:00,P101,Wireless Mouse,5,25.50,127.50,S100

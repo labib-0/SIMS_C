@@ -1,0 +1,18 @@
+[25/07/2026 01:05:18] [TEST_RUNNER] Verified core system initialization and data creation
+[25/07/2026 01:05:32] [SYSTEM] System shut down safely
+[25/07/2026 01:19:56] [SYSTEM] System shut down safely
+[25/07/2026 01:20:04] [A100] Logged in successfully
+[25/07/2026 01:20:06] [A100] Logged out
+[25/07/2026 01:20:08] [SYSTEM] System shut down safely
+[25/07/2026 01:58:45] [A100] Logged in successfully
+[25/07/2026 02:01:15] [M100] Created Store Manager account M100 (Asad)
+[25/07/2026 02:01:25] [A100] Logged out
+[25/07/2026 02:01:41] [M100] Logged in successfully
+[25/07/2026 02:04:05] [M100] Logged out
+[25/07/2026 02:04:22] [A100] Logged in successfully
+[25/07/2026 02:04:56] [S100] Created Sales Staff account S100 (Masuk)
+[25/07/2026 02:05:06] [A100] Logged out
+[25/07/2026 02:05:18] [S100] Logged in successfully
+[25/07/2026 03:10:51] [A100] Logged in successfully (Binary Search)
+[25/07/2026 03:11:29] [A100] Added Product P004 (Lolipop)
+[25/07/2026 06:10:39] [SYSTEM] System shut down safely
