@@ -11,6 +11,7 @@ struct Product
     int quantity;
     int minStock;
     int restockQty;
+    char stockAlert[30];
 };
 
 struct Transaction
@@ -71,8 +72,8 @@ void generateInventoryReport(const char *userId)
            "ID", "Product Name", "Category", "Price($)", "Qty", "Value($)");
     printf("---------------------------------------------------------------------------------\n");
 
-    while (fscanf(fp, "%[^,],%[^,],%[^,],%lf,%d,%d,%d\n",
-                  p.id, p.name, p.category, &p.price, &p.quantity, &p.minStock, &p.restockQty) >= 6)
+    while (fscanf(fp, "%[^,],%[^,],%[^,],%lf,%d,%d,%d,%[^\n]\n",
+                  p.id, p.name, p.category, &p.price, &p.quantity, &p.minStock, &p.restockQty, p.stockAlert) >= 7)
     {
         totalProducts++;
         totalItems += p.quantity;
@@ -106,7 +107,7 @@ void generateInventoryReport(const char *userId)
             skipHeader(fp);
             fprintf(rf, "%-8s %-25s %-15s %-10s %-8s %-12s\n", "ID", "Product Name", "Category", "Price($)", "Qty", "Value($)");
             fprintf(rf, "---------------------------------------------------------------------------------\n");
-            while (fscanf(fp, "%[^,],%[^,],%[^,],%lf,%d,%d,%d\n", p.id, p.name, p.category, &p.price, &p.quantity, &p.minStock, &p.restockQty) >= 6)
+            while (fscanf(fp, "%[^,],%[^,],%[^,],%lf,%d,%d,%d,%[^\n]\n", p.id, p.name, p.category, &p.price, &p.quantity, &p.minStock, &p.restockQty, p.stockAlert) >= 7)
             {
                 fprintf(rf, "%-8s %-25s %-15s %-10.2f %-8d %-12.2f\n", p.id, p.name, p.category, p.price, p.quantity, p.price * p.quantity);
             }
@@ -170,6 +171,7 @@ void generateSalesReport(const char *userId)
                   t.transId, t.date, t.time, t.productId, t.productName,
                   &t.quantity, &t.unitPrice, &t.totalPrice, t.soldBy) == 9)
     {
+        t.soldBy[strcspn(t.soldBy, "\r\n")] = '\0';
         long transInt = dateToInteger(t.date);
         if (transInt >= startInt && transInt <= endInt)
         {
@@ -211,6 +213,7 @@ void generateSalesReport(const char *userId)
                           t.transId, t.date, t.time, t.productId, t.productName,
                           &t.quantity, &t.unitPrice, &t.totalPrice, t.soldBy) == 9)
             {
+                t.soldBy[strcspn(t.soldBy, "\r\n")] = '\0';
                 long transInt = dateToInteger(t.date);
                 if (transInt >= startInt && transInt <= endInt)
                 {
@@ -256,7 +259,7 @@ void generatePerformanceReport(const char *userId)
     {
         skipHeader(fp);
         struct Product p;
-        while (fscanf(fp, "%[^,],%[^,],%[^,],%lf,%d,%d,%d\n", p.id, p.name, p.category, &p.price, &p.quantity, &p.minStock, &p.restockQty) >= 6)
+        while (fscanf(fp, "%[^,],%[^,],%[^,],%lf,%d,%d,%d,%[^\n]\n", p.id, p.name, p.category, &p.price, &p.quantity, &p.minStock, &p.restockQty, p.stockAlert) >= 7)
         {
             if (itemCnt < 200)
             {
@@ -279,14 +282,25 @@ void generatePerformanceReport(const char *userId)
                       t.transId, t.date, t.time, t.productId, t.productName,
                       &t.quantity, &t.unitPrice, &t.totalPrice, t.soldBy) == 9)
         {
+            t.soldBy[strcspn(t.soldBy, "\r\n")] = '\0';
+            int found = 0;
             for (int i = 0; i < itemCnt; i++)
             {
                 if (strcmp(items[i].id, t.productId) == 0)
                 {
                     items[i].totalSold += t.quantity;
                     items[i].totalRevenue += t.totalPrice;
+                    found = 1;
                     break;
                 }
+            }
+            if (!found && itemCnt < 200)
+            {
+                strcpy(items[itemCnt].id, t.productId);
+                strcpy(items[itemCnt].name, t.productName);
+                items[itemCnt].totalSold = t.quantity;
+                items[itemCnt].totalRevenue = t.totalPrice;
+                itemCnt++;
             }
         }
         fclose(tf);
@@ -296,7 +310,8 @@ void generatePerformanceReport(const char *userId)
     {
         for (int j = i + 1; j < itemCnt; j++)
         {
-            if (items[j].totalSold > items[i].totalSold)
+            if (items[j].totalSold > items[i].totalSold ||
+               (items[j].totalSold == items[i].totalSold && items[j].totalRevenue > items[i].totalRevenue))
             {
                 struct PerformanceItem temp = items[i];
                 items[i] = items[j];
@@ -378,3 +393,4 @@ void viewAuditLog(const char *userId)
     logAction(userId, "Viewed System Audit Logs");
     pressEnter();
 }
+

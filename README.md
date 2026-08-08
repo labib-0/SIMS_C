@@ -7,6 +7,9 @@
 
 A high-performance, modular, menu-driven command-line **Stock and Inventory Management System (SIMS)** written in pure **C**. Developed as part of the **Software Development Capstone Project (CEP2)** at Daffodil International University.
 
+> [!NOTE]
+> For complete technical documentation, architecture flowcharts, CSV database schemas, and API breakdowns, see [DOCUMENTATION.md](DOCUMENTATION.md).
+
 ---
 
 ## 🚀 System Architecture & Key Features
